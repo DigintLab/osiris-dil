@@ -85,7 +85,7 @@ export async function fetchPrivlist(
 
   const results = await Promise.allSettled(
     datasets.map(async (dset) => {
-      const params = new URLSearchParams({ ts: startDate, te: endDate, dset, full: 'true' });
+      const params = new URLSearchParams({ ts: startDate, te: endDate, dset, full: 'true', extended: 'true' });
       const url = `${apiEndpoint}/dbtr/privlist?${params}`;
       console.log('[DEP privlist] GET', url);
       const res = await fetch(url, {
