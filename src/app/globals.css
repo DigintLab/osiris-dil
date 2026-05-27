@@ -67,10 +67,10 @@
   --accent-dim:      #630101;
   --accent-glow:     rgba(128, 0, 0, 0.35);
 
-  /* ── Cyan Intel Stream (retained for live data streams) ── */
-  --cyan-primary: #00E5FF;
-  --cyan-dim:     #006B7A;
-  --cyan-glow:    rgba(0, 229, 255, 0.15);
+  /* ── Mustard Intel Stream — DE secondary accent (#9c9c69) ── */
+  --cyan-primary: #9c9c69;
+  --cyan-dim:     #5a5a3e;
+  --cyan-glow:    rgba(156, 156, 105, 0.18);
 
   /* ── Alert / Severity ── */
   --alert-red:    #e7040f;
@@ -82,7 +82,7 @@
   --border-primary:   rgba(128, 0, 0, 0.25);
   --border-secondary: rgba(128, 0, 0, 0.12);
   --border-active:    rgba(179, 0, 27, 0.55);
-  --border-cyan:      rgba(0, 229, 255, 0.18);
+  --border-cyan:      rgba(156, 156, 105, 0.22);
   --border-gold:      rgba(212, 175, 55, 0.2);
 
   /* ── Text ── */
@@ -91,7 +91,7 @@
   --text-muted:    #8a7777;
   --text-heading:  #f5eded;
   --text-gold:     #D4AF37;
-  --text-cyan:     #00E5FF;
+  --text-cyan:     #9c9c69;
   --text-accent:   #b3001b;
 
   /* ── Scrollbar ── */
