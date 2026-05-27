@@ -425,12 +425,24 @@ export default function Dashboard() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="absolute inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden"
-            style={{ background: 'radial-gradient(ellipse at center, #2a0808 0%, var(--bg-void) 70%)' }}
+            style={{ background: 'var(--bg-void)' }}
           >
-            {/* ── Subtle grain overlay ── */}
+            {/* ── Portrait background — left-anchored, fades right ── */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/dil-splash-bg.png"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full pointer-events-none z-[0]"
+              style={{ objectFit: 'cover', objectPosition: 'left center', opacity: 0.85 }}
+            />
+            {/* Fade-right vignette so content area stays readable */}
             <div className="absolute inset-0 pointer-events-none z-[1]" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(128,0,0,0.012) 2px, rgba(128,0,0,0.012) 4px)',
-              animation: 'splashScanDrift 8s linear infinite',
+              background: 'linear-gradient(to right, transparent 0%, rgba(23,0,0,0.55) 50%, rgba(23,0,0,0.92) 75%, #170000 100%)',
+            }} />
+            {/* Bottom fade */}
+            <div className="absolute inset-0 pointer-events-none z-[1]" style={{
+              background: 'linear-gradient(to top, #170000 0%, transparent 30%)',
             }} />
 
             {/* ── V4.2 badge — top-left ── */}
