@@ -671,7 +671,7 @@ export default function Dashboard() {
           className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em] uppercase"
           style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
         >
-          MIT
+          Dashboard: MIT
         </a>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
         <a
