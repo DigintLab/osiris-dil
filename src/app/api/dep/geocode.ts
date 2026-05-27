@@ -241,17 +241,84 @@ function jitter(): number {
   return (Math.random() - 0.5) * 0.8;
 }
 
+// Maps full country names (and common variants) to ISO 3166-1 alpha-2 codes.
+// Used when the API returns victimCountry (name) instead of / in addition to victimCC (code).
+const COUNTRY_NAME_TO_CC: Record<string, string> = {
+  'afghanistan': 'AF', 'albania': 'AL', 'algeria': 'DZ', 'angola': 'AO',
+  'argentina': 'AR', 'armenia': 'AM', 'australia': 'AU', 'austria': 'AT',
+  'azerbaijan': 'AZ', 'bahrain': 'BH', 'bangladesh': 'BD', 'belarus': 'BY',
+  'belgium': 'BE', 'belize': 'BZ', 'benin': 'BJ', 'bolivia': 'BO',
+  'bosnia and herzegovina': 'BA', 'bosnia': 'BA', 'botswana': 'BW',
+  'brazil': 'BR', 'bulgaria': 'BG', 'burkina faso': 'BF', 'burundi': 'BI',
+  'cambodia': 'KH', 'cameroon': 'CM', 'canada': 'CA',
+  'central african republic': 'CF', 'chad': 'TD', 'chile': 'CL',
+  'china': 'CN', "people's republic of china": 'CN', 'colombia': 'CO',
+  'congo': 'CG', 'democratic republic of the congo': 'CD', 'dr congo': 'CD',
+  'costa rica': 'CR', 'croatia': 'HR', 'cuba': 'CU', 'cyprus': 'CY',
+  'czech republic': 'CZ', 'czechia': 'CZ', 'denmark': 'DK', 'djibouti': 'DJ',
+  'dominican republic': 'DO', 'ecuador': 'EC', 'egypt': 'EG',
+  'el salvador': 'SV', 'estonia': 'EE', 'ethiopia': 'ET', 'finland': 'FI',
+  'france': 'FR', 'gabon': 'GA', 'georgia': 'GE', 'germany': 'DE',
+  'ghana': 'GH', 'greece': 'GR', 'guatemala': 'GT', 'guinea': 'GN',
+  'guinea-bissau': 'GW', 'guyana': 'GY', 'haiti': 'HT', 'honduras': 'HN',
+  'hungary': 'HU', 'iceland': 'IS', 'india': 'IN', 'indonesia': 'ID',
+  'iran': 'IR', 'iraq': 'IQ', 'ireland': 'IE', 'israel': 'IL', 'italy': 'IT',
+  'jamaica': 'JM', 'japan': 'JP', 'jordan': 'JO', 'kazakhstan': 'KZ',
+  'kenya': 'KE', 'north korea': 'KP', 'south korea': 'KR', 'korea': 'KR',
+  'kuwait': 'KW', 'kyrgyzstan': 'KG', 'laos': 'LA', 'latvia': 'LV',
+  'lebanon': 'LB', 'lesotho': 'LS', 'liberia': 'LR', 'libya': 'LY',
+  'lithuania': 'LT', 'luxembourg': 'LU', 'north macedonia': 'MK',
+  'madagascar': 'MG', 'malawi': 'MW', 'malaysia': 'MY', 'mali': 'ML',
+  'malta': 'MT', 'mauritania': 'MR', 'mexico': 'MX', 'moldova': 'MD',
+  'mongolia': 'MN', 'montenegro': 'ME', 'morocco': 'MA', 'mozambique': 'MZ',
+  'myanmar': 'MM', 'namibia': 'NA', 'nepal': 'NP', 'netherlands': 'NL',
+  'new zealand': 'NZ', 'nicaragua': 'NI', 'niger': 'NE', 'nigeria': 'NG',
+  'norway': 'NO', 'oman': 'OM', 'pakistan': 'PK', 'panama': 'PA',
+  'papua new guinea': 'PG', 'paraguay': 'PY', 'peru': 'PE',
+  'philippines': 'PH', 'poland': 'PL', 'portugal': 'PT', 'qatar': 'QA',
+  'romania': 'RO', 'russia': 'RU', 'russian federation': 'RU', 'rwanda': 'RW',
+  'saudi arabia': 'SA', 'senegal': 'SN', 'serbia': 'RS', 'seychelles': 'SC',
+  'sierra leone': 'SL', 'singapore': 'SG', 'slovakia': 'SK', 'slovenia': 'SI',
+  'somalia': 'SO', 'south africa': 'ZA', 'south sudan': 'SS', 'spain': 'ES',
+  'sri lanka': 'LK', 'sudan': 'SD', 'suriname': 'SR', 'sweden': 'SE',
+  'switzerland': 'CH', 'syria': 'SY', 'taiwan': 'TW', 'tajikistan': 'TJ',
+  'tanzania': 'TZ', 'thailand': 'TH', 'timor-leste': 'TL', 'togo': 'TG',
+  'trinidad and tobago': 'TT', 'tunisia': 'TN', 'turkey': 'TR',
+  'turkmenistan': 'TM', 'uganda': 'UG', 'ukraine': 'UA',
+  'united arab emirates': 'AE', 'uae': 'AE',
+  'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB',
+  'united states': 'US', 'usa': 'US', 'united states of america': 'US',
+  'uruguay': 'UY', 'uzbekistan': 'UZ', 'venezuela': 'VE', 'vietnam': 'VN',
+  'viet nam': 'VN', 'yemen': 'YE', 'zambia': 'ZM', 'zimbabwe': 'ZW',
+  // Extra common ones
+  'hong kong': 'HK', 'macau': 'MO', 'palestine': 'PS', 'kosovo': 'XK',
+  'puerto rico': 'PR', 'bahamas': 'BS', 'barbados': 'BB', 'bermuda': 'BM',
+  'cayman islands': 'KY', 'liechtenstein': 'LI', 'monaco': 'MC',
+  'san marino': 'SM', 'andorra': 'AD', 'iceland': 'IS',
+  'trinidad & tobago': 'TT', 'republic of ireland': 'IE',
+  'republic of korea': 'KR', 'republic of the philippines': 'PH',
+};
+
+export function countryNameToCC(name: string | null): string | null {
+  if (!name) return null;
+  return COUNTRY_NAME_TO_CC[name.toLowerCase().trim()] ?? null;
+}
+
 export function geocodeVictim(
   victimCity: string | null,
   victimCC: string | null,
+  victimCountry: string | null = null,
 ): { lat: number; lng: number; tier: 'city' | 'country' } | null {
-  if (victimCity && victimCC) {
-    const key = `${victimCity.toLowerCase()}:${victimCC.toUpperCase()}`;
+  // Resolve CC from name if not provided directly
+  const cc = victimCC ?? countryNameToCC(victimCountry);
+
+  if (victimCity && cc) {
+    const key = `${victimCity.toLowerCase()}:${cc.toUpperCase()}`;
     const c = CITY_COORDS[key];
     if (c) return { lng: c[0] + jitter() * 0.3, lat: c[1] + jitter() * 0.3, tier: 'city' };
   }
-  if (victimCC) {
-    const c = COUNTRY_CENTROIDS[victimCC.toUpperCase()];
+  if (cc) {
+    const c = COUNTRY_CENTROIDS[cc.toUpperCase()];
     if (c) return { lng: c[0] + jitter(), lat: c[1] + jitter(), tier: 'country' };
   }
   return null;

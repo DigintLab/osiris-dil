@@ -35,12 +35,30 @@ export async function GET(req: NextRequest) {
   try {
     const records = await fetchPrivlist(datasets, ts, te);
 
+    // Diagnostic: log keys + first 3 records per dataset to verify field names and geo data
+    if (records.length > 0) {
+      const sample = records[0];
+      console.log('[DEP privlist] sample record keys:', Object.keys(sample));
+
+      const byDset = records.reduce((acc: Record<string, typeof records>, r) => {
+        (acc[r.dset] = acc[r.dset] || []).push(r);
+        return acc;
+      }, {});
+      for (const [dset, recs] of Object.entries(byDset)) {
+        console.log(`[DEP privlist] ${dset} — first 3 geo fields:`);
+        recs.slice(0, 3).forEach((r, i) => {
+          console.log(`  [${i}] victim="${r.victim}" victimCC=${r.victimCC} victimCountry=${r.victimCountry} victimCity=${r.victimCity}`);
+        });
+      }
+    }
+
     let fallbackId = 0;
+    let dropped = 0;
     const victims: DepGeoPoint[] = [];
 
     for (const r of records) {
-      const geo = geocodeVictim(r.victimCity, r.victimCC);
-      if (!geo) continue;
+      const geo = geocodeVictim(r.victimCity, r.victimCC, r.victimCountry ?? null);
+      if (!geo) { dropped++; continue; }
 
       victims.push({
         id: r.hashid || `dep-${fallbackId++}`,
@@ -59,6 +77,8 @@ export async function GET(req: NextRequest) {
         geocodeTier: geo.tier,
       });
     }
+
+    console.log(`[DEP privlist] geocoded: ${victims.length} plotted, ${dropped} dropped (no usable location)`);
 
     return NextResponse.json({ victims, total: victims.length, ts, te, datasets }, {
       headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
