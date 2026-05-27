@@ -375,9 +375,9 @@ export default function Dashboard() {
       fetchEndpoint('/api/gdelt', d => ({ gdelt: d.events }));
       layerFetchedRef.current.add('gdelt');
     }
-    // DEP Breach Events
+    // DEP Breach Events — UI always requests ext,prv,dds; server allowlist (DEP_DEFAULT_DATASETS) gates what's returned
     if (activeLayers.dep_threats && !layerFetchedRef.current.has('dep_threats')) {
-      fetchEndpoint('/api/dep/privlist', d => ({ dep_threats: d.victims }));
+      fetchEndpoint('/api/dep/privlist?dset=ext,prv,dds', d => ({ dep_threats: d.victims }));
       layerFetchedRef.current.add('dep_threats');
     }
 
@@ -400,7 +400,7 @@ export default function Dashboard() {
       intervals.push(setInterval(() => fetchEndpoint('/api/maritime', d => ({ maritime_ports: d.ports, maritime_chokepoints: d.chokepoints, maritime_ships: d.ships })), 60000)); // 1m
     }
     if (activeLayers.dep_threats) {
-      intervals.push(setInterval(() => fetchEndpoint('/api/dep/privlist', d => ({ dep_threats: d.victims })), 1800000)); // 30 min
+      intervals.push(setInterval(() => fetchEndpoint('/api/dep/privlist?dset=ext,prv,dds', d => ({ dep_threats: d.victims })), 1800000)); // 30 min
     }
     // Fires: no polling needed (data changes very slowly, initial fetch is enough)
     return () => intervals.forEach(clearInterval);
