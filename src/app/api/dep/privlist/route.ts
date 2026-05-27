@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
       for (const [dset, recs] of Object.entries(byDset)) {
         console.log(`[DEP privlist] ${dset} — first 3 geo fields:`);
         recs.slice(0, 3).forEach((r, i) => {
-          console.log(`  [${i}] victim="${r.victim}" victimCC=${r.victimCC} victimCountry=${r.victimCountry} victimCity=${r.victimCity}`);
+          console.log(`  [${i}] victim="${r.victim}" victimCC=${r.victimCC} country=${r.country} victimCity=${r.victimCity}`);
         });
       }
     }
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
     const victims: DepGeoPoint[] = [];
 
     for (const r of records) {
-      const geo = geocodeVictim(r.victimCity, r.victimCC, r.victimCountry ?? null);
+      const geo = geocodeVictim(r.victimCity, r.victimCC, r.country ?? null);
       if (!geo) { dropped++; continue; }
 
       victims.push({
