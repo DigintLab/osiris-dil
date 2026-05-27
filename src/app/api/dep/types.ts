@@ -35,7 +35,6 @@ export interface DepPrivlistRecord {
   annDescription: string | null;
   annDataTypes: string[];
   victimCC: string | null;
-  victimCountry: string | null;  // Full country name — used when victimCC is absent
   victimCity: string | null;
   victimState: string | null;
   victimAddress: string | null;

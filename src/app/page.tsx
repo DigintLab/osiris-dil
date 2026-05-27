@@ -375,7 +375,7 @@ export default function Dashboard() {
       fetchEndpoint('/api/gdelt', d => ({ gdelt: d.events }));
       layerFetchedRef.current.add('gdelt');
     }
-    // DEP Breach Events
+    // DEP Breach Events — UI always requests ext,prv,dds; server allowlist (DEP_DEFAULT_DATASETS) gates what's returned
     if (activeLayers.dep_threats && !layerFetchedRef.current.has('dep_threats')) {
       fetchEndpoint('/api/dep/privlist', d => ({ dep_threats: d.victims }));
       layerFetchedRef.current.add('dep_threats');

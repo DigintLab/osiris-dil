@@ -23,7 +23,13 @@ export async function GET(req: NextRequest) {
 
   const te = searchParams.get('te') || toDateString(today);
   const ts = searchParams.get('ts') || toDateString(defaultStart);
-  const rawDsets = (searchParams.get('dset') || 'ext,prv,dds').split(',').map((d: string) => d.trim());
+  const enabledDsets = new Set(
+    (process.env.DEP_DEFAULT_DATASETS || 'ext,prv,dds').split(',').map((d: string) => d.trim()).filter(Boolean)
+  );
+  const requestedDsets = searchParams.get('dset')
+    ? searchParams.get('dset')!.split(',').map((d: string) => d.trim()).filter(Boolean)
+    : [...enabledDsets];
+  const rawDsets = requestedDsets.filter(d => enabledDsets.has(d));
   const datasets = rawDsets.filter((d: string) => VALID_DSETS.has(d)) as DepDataset[];
 
   if (datasets.length === 0) {
@@ -47,7 +53,7 @@ export async function GET(req: NextRequest) {
       for (const [dset, recs] of Object.entries(byDset)) {
         console.log(`[DEP privlist] ${dset} — first 3 geo fields:`);
         recs.slice(0, 3).forEach((r, i) => {
-          console.log(`  [${i}] victim="${r.victim}" victimCC=${r.victimCC} victimCountry=${r.victimCountry} victimCity=${r.victimCity}`);
+          console.log(`  [${i}] victim="${r.victim}" victimCC=${r.victimCC} country=${r.country} victimCity=${r.victimCity}`);
         });
       }
     }
@@ -57,7 +63,7 @@ export async function GET(req: NextRequest) {
     const victims: DepGeoPoint[] = [];
 
     for (const r of records) {
-      const geo = geocodeVictim(r.victimCity, r.victimCC, r.victimCountry ?? null);
+      const geo = geocodeVictim(r.victimCity, r.victimCC, r.country ?? null);
       if (!geo) { dropped++; continue; }
 
       victims.push({
