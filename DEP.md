@@ -103,7 +103,7 @@ Example — last 90 days, extortion only:
 | `ext` | Ransomware / Extortion | Red `#FF3D3D` |
 | `prv` | Privacy breach | Orange `#FF9500` |
 | `dds` | DDoS | Yellow `#FFD700` |
-| `nws` | Open news | Cyan `#00E5FF` |
+| `nws` | Major Breach | Cyan `#00E5FF` |
 | `vnd` | Vandalism | Purple `#E040FB` |
 | `frm` | Underground forum | Green `#00E676` |
 
