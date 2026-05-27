@@ -144,8 +144,10 @@ export default function DepPanel() {
                       <div key={i} className="rounded-sm p-2 transition-colors"
                         style={{ border: `1px solid ${color}25`, background: `${color}05` }}>
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <span className="text-[10px] font-mono font-bold text-[var(--text-primary)] leading-tight">{r.victim || '—'}</span>
-                          <span className="text-[7px] font-mono font-bold shrink-0 px-1 py-0.5 rounded-sm"
+                          {r.victim && (
+                            <span className="text-[10px] font-mono font-bold text-[var(--text-primary)] leading-tight">{r.victim}</span>
+                          )}
+                          <span className="text-[7px] font-mono font-bold shrink-0 px-1 py-0.5 rounded-sm ml-auto"
                             style={{ color, background: `${color}15`, border: `1px solid ${color}30` }}>
                             {label}
                           </span>

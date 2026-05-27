@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
 
       victims.push({
         id: r.hashid || `dep-${fallbackId++}`,
-        victim: hideIdentity ? '[REDACTED]' : r.victim,
+        victim: hideIdentity ? null : r.victim,
         sector: r.sector,
         actor: r.actor,
         date: r.date,

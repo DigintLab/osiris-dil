@@ -42,15 +42,18 @@ export interface DepPrivlistRecord {
 
 export interface DepGeoPoint {
   id: string;
-  victim: string;
+  /** null when DEP_HIDE_VICTIM_NAME=true */
+  victim: string | null;
   sector: string | null;
   actor: string | null;
   date: string;
+  /** null when DEP_HIDE_VICTIM_NAME=true */
   site: string | null;
   dset: DepDataset;
   victimCC: string | null;
   victimCity: string | null;
   victimState: string | null;
+  /** null when DEP_HIDE_VICTIM_NAME=true */
   victimAddress: string | null;
   lat: number;
   lng: number;
@@ -58,10 +61,12 @@ export interface DepGeoPoint {
 }
 
 export interface DepSearchResult {
-  victim: string;
+  /** null when DEP_HIDE_VICTIM_NAME=true */
+  victim: string | null;
   sector: string | null;
   actor: string | null;
   country: string | null;
+  /** null when DEP_HIDE_VICTIM_NAME=true */
   domain: string | null;
   date: string | null;
   dset: string | null;

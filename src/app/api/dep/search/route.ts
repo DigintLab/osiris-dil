@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       : await searchByKeyword(keyw!, dset, maxres);
 
     const results = hideIdentity
-      ? raw.map((r: any) => ({ ...r, victim: '[REDACTED]', domain: null, victimDomain: null, annLink: null }))
+      ? raw.map((r: any) => ({ ...r, victim: null, domain: null, victimDomain: null, annLink: null }))
       : raw;
 
     return NextResponse.json({ results, total: results.length }, {

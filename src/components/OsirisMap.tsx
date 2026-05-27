@@ -474,13 +474,16 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         'circle-stroke-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
         'circle-stroke-opacity': 0.5,
       }});
-      map.addLayer({ id: 'dep-label', type: 'symbol', source: 'dep-threats', minzoom: 6, layout: {
-        'text-field': ['get','victim'], 'text-size': 9, 'text-font': ['Open Sans Regular'],
-        'text-offset': [0, 1.8], 'text-max-width': 14, 'text-allow-overlap': false,
-      }, paint: {
-        'text-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
-        'text-halo-color': '#000', 'text-halo-width': 1.5, 'text-opacity': 0.8,
-      }});
+      map.addLayer({ id: 'dep-label', type: 'symbol', source: 'dep-threats', minzoom: 6,
+        // Only render label when victim field is present and non-null
+        filter: ['all', ['has', 'victim'], ['!=', ['get', 'victim'], null]],
+        layout: {
+          'text-field': ['get','victim'], 'text-size': 9, 'text-font': ['Open Sans Regular'],
+          'text-offset': [0, 1.8], 'text-max-width': 14, 'text-allow-overlap': false,
+        }, paint: {
+          'text-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
+          'text-halo-color': '#000', 'text-halo-width': 1.5, 'text-opacity': 0.8,
+        }});
 
       // Radiation (glow based on reading level)
       map.addLayer({ id: 'rad-glow', type: 'circle', source: 'radiation', paint: {
@@ -766,7 +769,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const location = [p.victimCity, p.victimState, p.victimCC].filter(Boolean).join(', ') || '—';
       popup(coords, `<div style="${pStyle}border:1px solid ${color}40;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-          <span style="color:${color};font-size:13px;font-weight:700;letter-spacing:0.08em;">${p.victim || '—'}</span>
+          ${p.victim ? `<span style="color:${color};font-size:13px;font-weight:700;letter-spacing:0.08em;">${p.victim}</span>` : ''}
           <span style="padding:2px 6px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:0.1em;background:${color}15;border:1px solid ${color}30;color:${color};">${label}</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:9px;margin-bottom:8px;">
