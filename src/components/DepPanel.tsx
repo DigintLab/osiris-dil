@@ -5,12 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Search, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from 'lucide-react';
 
 const DSET_COLORS: Record<string, string> = {
-  ext: '#FF3D3D', prv: '#FF9500', dds: '#FFD700',
-  nws: '#00E5FF', vnd: '#E040FB', frm: '#00E676',
+  ext: '#b3001b', // crimson      — data extortion
+  prv: '#d4533a', // terra cotta  — regulatory
+  dds: '#ffb700', // amber        — ddos
+  nws: '#9c9c69', // mustard      — major breach
+  vnd: '#4a5e6a', // slate        — vandalism
+  frm: '#6b8e8e', // teal         — underground
 };
 const DSET_LABELS: Record<string, string> = {
-  ext: 'RANSOMWARE', prv: 'PRIVACY', dds: 'DDOS',
-  nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND',
+  ext: 'DATA EXTORTION', prv: 'REGULATORY', dds: 'DDOS',
+  nws: 'MAJOR BREACH',   vnd: 'VANDALISM',  frm: 'UNDERGROUND',
 };
 
 export default function DepPanel() {
@@ -140,8 +144,10 @@ export default function DepPanel() {
                       <div key={i} className="rounded-sm p-2 transition-colors"
                         style={{ border: `1px solid ${color}25`, background: `${color}05` }}>
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <span className="text-[10px] font-mono font-bold text-[var(--text-primary)] leading-tight">{r.victim || '—'}</span>
-                          <span className="text-[7px] font-mono font-bold shrink-0 px-1 py-0.5 rounded-sm"
+                          {r.victim && (
+                            <span className="text-[10px] font-mono font-bold text-[var(--text-primary)] leading-tight">{r.victim}</span>
+                          )}
+                          <span className="text-[7px] font-mono font-bold shrink-0 px-1 py-0.5 rounded-sm ml-auto"
                             style={{ color, background: `${color}15`, border: `1px solid ${color}30` }}>
                             {label}
                           </span>

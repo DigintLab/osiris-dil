@@ -652,7 +652,7 @@ export default function Dashboard() {
         <span className="text-[8px] font-mono tracking-[0.18em] uppercase" style={{ color: 'var(--de-fg-3)' }}>
           Built on{' '}
           <a
-            href="https://osirisai.live"
+            href="https://github.com/simplifaisoul/osiris"
             target="_blank"
             rel="noopener noreferrer"
             className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors"
@@ -726,7 +726,7 @@ export default function Dashboard() {
         {showLayers && (
           <>
             <LayerPanel data={data} activeLayers={activeLayers} setActiveLayers={setActiveLayers} />
-            <ViewPresets onNavigate={(lat, lng, zoom) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMapView(v => ({ ...v, zoom })); }} />
+            <ViewPresets gdeltData={data.gdelt} onNavigate={(lat, lng, zoom) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMapView(v => ({ ...v, zoom })); }} />
           </>
         )}
         {showMarkets && <MarketsPanel data={data} spaceWeather={spaceWeather} />}
@@ -895,7 +895,7 @@ export default function Dashboard() {
                       </div>
                       <LayerPanel data={data} activeLayers={activeLayers} setActiveLayers={setActiveLayers} />
                       <div className="mt-2">
-                        <ViewPresets onNavigate={(lat, lng, zoom) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMapView(v => ({ ...v, zoom })); setMobilePanel(null); }} />
+                        <ViewPresets gdeltData={data.gdelt} onNavigate={(lat, lng, zoom) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMapView(v => ({ ...v, zoom })); setMobilePanel(null); }} />
                       </div>
                     </>
                   )}
