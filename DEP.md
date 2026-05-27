@@ -37,6 +37,10 @@ DEP_PASSWORD=                  # Alternative: your DEP login password
 
 # Optional privacy control
 DEP_HIDE_VICTIM_NAME=true      # Set to "true" to redact victim names and domains
+
+# Default datasets for the map layer (comma-separated). Overridable per-request via ?dset=
+# Available: ext (ransomware), prv (privacy), dds (DDoS), nws (news), vnd (vandalism), frm (forum)
+DEP_DEFAULT_DATASETS=ext,prv,dds
 ```
 
 If `DEP_API_KEY` or `DEP_AUTH_ENDPOINT` are not set, both features silently return `503` and the layer toggle has no effect — no errors are shown to end users.

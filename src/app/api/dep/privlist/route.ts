@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
 
   const te = searchParams.get('te') || toDateString(today);
   const ts = searchParams.get('ts') || toDateString(defaultStart);
-  const rawDsets = (searchParams.get('dset') || 'ext,prv,dds').split(',').map((d: string) => d.trim());
+  const defaultDsets = process.env.DEP_DEFAULT_DATASETS || 'ext,prv,dds';
+  const rawDsets = (searchParams.get('dset') || defaultDsets).split(',').map((d: string) => d.trim());
   const datasets = rawDsets.filter((d: string) => VALID_DSETS.has(d)) as DepDataset[];
 
   if (datasets.length === 0) {
