@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const SITE_URL = "https://osirisai.live";
+const SITE_URL = "https://community.digintlab.com";
 const SITE_NAME = "DIL Observatory";
-const SITE_TITLE = "DIL Observatory — Digital Intelligence Lab | Live Flight Tracking, CCTV, OSINT Tools & Threat Intelligence";
-const SITE_DESCRIPTION = "Open-source global intelligence community dashboard by Digital Intelligence Lab. Track 10,000+ aircraft, 2,000 satellites, and worldwide CCTV cameras in real-time on a 3D globe. Run Nmap scans, DNS lookups, WHOIS queries, SSL cert analysis & threat intelligence — all from your browser. 20+ live data feeds including earthquakes, wildfires, nuclear facilities, cyber threats, and global conflicts. Built on Osiris.";
+const SITE_TITLE = "DIL Observatory — Digital Intelligence Lab | Live Map of Digital Threats, Breaches & Cyber Intelligence";
+const SITE_DESCRIPTION = "The DIL Observatory gives analysts, researchers, journalists, and curious observers a live, map-based view of recent activity across the digital landscape. Explore signals from extortion, data breaches, vandalism, underground activity, threat infrastructure, vulnerability intelligence, regulatory developments, and broader cyber and digital risk — all in one shared space.";
 
 export const viewport: Viewport = {
   themeColor: "#800000",
@@ -22,40 +22,33 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    // OSINT Tools - Primary focus
-    "OSINT tools", "free OSINT tools", "online OSINT toolkit", "OSINT framework",
-    "nmap online", "nmap scanner online", "free nmap scan", "port scanner online",
-    "DNS lookup tool", "WHOIS lookup", "reverse DNS", "DNS records",
-    "SSL certificate checker", "certificate transparency", "cert lookup",
-    "BGP routing lookup", "ASN lookup", "IP geolocation",
-    "threat intelligence", "threat intel lookup", "IP reputation check",
-    "network reconnaissance", "recon tools", "penetration testing tools",
-    "cybersecurity tools", "infosec tools", "security scanner",
-    "linux OSINT tools", "kali linux tools online", "OSINT browser tools",
-    
-    // Intelligence Platform
-    "OSINT", "open source intelligence", "intelligence platform", "global intelligence",
-    "geospatial intelligence", "GEOINT", "SIGINT", "real-time tracking",
-    "palantir alternative", "open source palantir", "intelligence dashboard",
-    
-    // Tracking & Data
-    "flight tracker", "aircraft tracking", "ADS-B tracker", "live flight radar",
-    "satellite tracking", "ISS tracker", "space station tracker",
-    "CCTV cameras live", "security cameras worldwide", "live cameras",
-    "earthquake monitor", "seismic activity", "USGS earthquake",
-    "wildfire tracker", "NASA FIRMS", "active fires",
-    "nuclear facilities map", "nuclear power plants",
-    "severe weather alerts", "weather radar",
-    "cyber threats dashboard", "CVE tracker",
-    "space weather", "solar storm", "GPS jamming",
-    "defense stocks", "commodities tracker",
-    
+    // Core Intelligence
+    "digital intelligence", "cyber intelligence", "threat intelligence", "digital risk",
+    "open source intelligence", "OSINT", "intelligence dashboard", "cyber monitoring",
+
+    // Event Types
+    "data breach tracker", "extortion tracker", "ransomware tracker",
+    "cyber vandalism", "underground activity", "darkweb intelligence",
+    "threat infrastructure", "vulnerability intelligence", "CVE tracker",
+    "regulatory intelligence", "cyber incident map",
+
+    // Platform & Features
+    "live cyber threat map", "interactive threat map", "global security map",
+    "intelligence feeds", "cyber event timeline", "actor tracking",
+    "sector risk intelligence", "geopolitical digital risk",
+    "real-time breach monitoring", "digital landscape intelligence",
+
+    // Audience
+    "security analyst tools", "threat researcher tools", "OSINT for journalists",
+    "cybersecurity dashboard", "infosec intelligence", "SOC tools",
+    "digital forensics tools", "incident intelligence platform",
+
     // Brand
-    "osiris", "osirisai", "osirisai.live",
+    "DIL Observatory", "Digital Intelligence Lab", "digintlab", "community.digintlab.com",
   ],
-  authors: [{ name: "Osiris Project", url: SITE_URL }],
-  creator: "Osiris Project",
-  publisher: "Osiris Project",
+  authors: [{ name: "Digital Intelligence Lab", url: SITE_URL }],
+  creator: "Digital Intelligence Lab",
+  publisher: "Digital Intelligence Lab",
   robots: {
     index: true,
     follow: true,
@@ -85,13 +78,13 @@ export const metadata: Metadata = {
       },
     ],
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.json",
   alternates: {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: "DIL Observatory — Open-Source Global Intelligence Dashboard | Live Flights, CCTV, Satellites & OSINT Tools",
-    description: "Track 10K+ aircraft, 2K satellites & worldwide CCTV on a 3D globe. Run Nmap, DNS, WHOIS & threat intel scans from your browser. 20+ live intelligence feeds. Built on Osiris by Digital Intelligence Lab.",
+    title: "DIL Observatory — Live Map of Digital Threats, Breaches & Cyber Intelligence",
+    description: "A live, map-based view of digital activity across the global landscape. Explore extortion, data breaches, underground signals, vulnerability intelligence, regulatory shifts, and more — by Digital Intelligence Lab.",
     type: "website",
     siteName: SITE_NAME,
     locale: "en_US",
@@ -101,17 +94,17 @@ export const metadata: Metadata = {
         url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "OSIRIS — Open Source Intelligence Platform with Live Tracking & OSINT Tools",
+        alt: "DIL Observatory — Digital Intelligence Lab live threat map and cyber intelligence dashboard",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DIL Observatory — Open-Source Global Intelligence Dashboard | Live Tracking + OSINT Tools",
-    description: "Track 10K+ flights, satellites & CCTV worldwide. Run Nmap, DNS, WHOIS scans. 20+ live intel feeds. Built on Osiris by Digital Intelligence Lab.",
-    creator: "@simplifaisoul",
-    site: "@simplifaisoul",
+    title: "DIL Observatory — Live Map of Digital Threats & Cyber Intelligence",
+    description: "Track extortion, data breaches, underground activity & more on an interactive map. By Digital Intelligence Lab.",
+    creator: "@digintlab",
+    site: "@digintlab",
     images: [`${SITE_URL}/og-image.png`],
   },
   category: "technology",
@@ -130,8 +123,8 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "DIL Observatory — Open-Source Intelligence Dashboard",
-  alternateName: ["DIL Observatory", "Digital Intelligence Lab Observatory", "OSIRIS"],
+  name: "DIL Observatory — Digital Intelligence Lab",
+  alternateName: ["DIL Observatory", "Digital Intelligence Lab Observatory", "DIL Community Observatory"],
   url: SITE_URL,
   description: SITE_DESCRIPTION,
   applicationCategory: "SecurityApplication",
@@ -144,32 +137,26 @@ const jsonLd = {
     availability: "https://schema.org/InStock",
   },
   featureList: [
-    "Nmap port scanning from the browser — no install required",
-    "DNS record lookup (A, AAAA, MX, NS, TXT, CNAME)",
-    "WHOIS domain registration lookup",
-    "SSL/TLS certificate transparency search",
-    "BGP routing & ASN lookup",
-    "IP geolocation & threat intelligence",
-    "Real-time flight tracking (10,000+ aircraft via ADS-B)",
-    "Satellite tracking (2,000+ objects including ISS)",
-    "Worldwide CCTV camera monitoring (1,400+ feeds)",
-    "Earthquake monitoring (USGS live feed)",
-    "Wildfire detection (NASA FIRMS satellite data)",
-    "Nuclear facility mapping (worldwide)",
-    "Severe weather alerts & tracking",
-    "Cyber threat & CVE intelligence",
-    "Space weather & solar storm monitoring",
-    "GPS jamming detection",
-    "Defense & commodity market tracking",
-    "SIGINT news aggregation feed",
-    "Interactive 3D globe with day/night cycle",
-    "Region intelligence dossier reports",
+    "Live interactive global map of digital events",
+    "Extortion and ransomware incident tracking",
+    "Data breach monitoring and alerts",
+    "Web vandalism and defacement tracking",
+    "Underground and darkweb activity signals",
+    "Threat infrastructure intelligence",
+    "Vulnerability and CVE intelligence feeds",
+    "Regulatory and policy developments tracking",
+    "Cyber and digital risk indicators",
+    "Actor, sector, and location attribution",
+    "Event detail inspection with geocoding",
+    "Regional intelligence presets",
+    "Market and contextual risk indicators",
+    "Multi-domain intelligence feed aggregation",
   ],
   screenshot: `${SITE_URL}/og-image.png`,
   author: {
     "@type": "Organization",
     name: "Digital Intelligence Lab",
-    url: SITE_URL,
+    url: "https://digintlab.com",
   },
 };
 

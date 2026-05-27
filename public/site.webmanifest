@@ -1,1 +1,30 @@
-{"name":"","short_name":"","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
+{
+  "name": "DIL Community Observatory",
+  "short_name": "DIL-OBS",
+  "description": "Digital Intelligence Lab Observatory — a live map of activity across the digital landscape.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06060C",
+  "theme_color": "#D4AF37",
+  "orientation": "landscape-primary",
+  "icons": [
+    {
+      "src": "/favicon-dil.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/dil-logo-white.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
