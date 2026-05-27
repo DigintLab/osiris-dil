@@ -108,9 +108,11 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       createDot(map, 'dot-fire', '#FF6B00', 10);
       createDot(map, 'dot-cctv', '#39FF14', 10);
 
-      // Sources
-      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gdelt','gps-jamming','day-night','cctv','fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'dep-threats'];
+      // Sources — gdelt added separately with clustering
+      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gps-jamming','day-night','cctv','fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'dep-threats'];
       sources.forEach(s => map.addSource(s, { type: 'geojson', data: EMPTY_FC }));
+      // GDELT with clustering so country-centroid stacks collapse into clean circles
+      map.addSource('gdelt', { type: 'geojson', data: EMPTY_FC, cluster: true, clusterMaxZoom: 7, clusterRadius: 48 });
 
       // ── CONFLICT ZONES — small warning markers (not polygons) ──
       // Create warning triangle icon
@@ -218,10 +220,37 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         'text-offset': [0, 1.8], 'text-max-width': 12, 'text-allow-overlap': false,
       }, paint: { 'text-color': '#39FF14', 'text-halo-color': '#000', 'text-halo-width': 1, 'text-opacity': 0.7 }});
 
-      // GDELT
-      map.addLayer({ id: 'gdelt-dots', type: 'circle', source: 'gdelt', paint: {
-        'circle-radius': 4, 'circle-color': '#FF3D3D', 'circle-opacity': 0.5, 'circle-stroke-width': 1, 'circle-stroke-color': '#FF3D3D', 'circle-stroke-opacity': 0.3,
-      }});
+      // GDELT — clustered
+      // Cluster bubble
+      map.addLayer({ id: 'gdelt-clusters', type: 'circle', source: 'gdelt',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': ['step', ['get','point_count'], '#b3001b', 10, '#800000', 50, '#630101'],
+          'circle-radius': ['step', ['get','point_count'], 14, 10, 20, 50, 28],
+          'circle-opacity': 0.75,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': 'rgba(179,0,27,0.4)',
+        }
+      });
+      // Cluster count label
+      map.addLayer({ id: 'gdelt-cluster-count', type: 'symbol', source: 'gdelt',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['Open Sans Bold'],
+          'text-size': 11,
+          'text-allow-overlap': true,
+        },
+        paint: { 'text-color': '#eeeeee' }
+      });
+      // Individual unclustered dots
+      map.addLayer({ id: 'gdelt-dots', type: 'circle', source: 'gdelt',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': 4, 'circle-color': '#b3001b', 'circle-opacity': 0.6,
+          'circle-stroke-width': 1, 'circle-stroke-color': '#FF3D3D', 'circle-stroke-opacity': 0.4,
+        }
+      });
 
       // GPS Jamming
       map.addLayer({ id: 'jam-fill', type: 'circle', source: 'gps-jamming', paint: { 'circle-radius': 30, 'circle-color': '#FF0000', 'circle-opacity': 0.15, 'circle-blur': 1 }});
@@ -571,6 +600,16 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       </div>`);
     });
 
+    // ── GDELT cluster — zoom in on click ──
+    map.on('click', 'gdelt-clusters', e => {
+      if (!e.features?.length) return;
+      const clusterId = e.features[0].properties?.cluster_id;
+      (map.getSource('gdelt') as any).getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+        if (err) return;
+        map.easeTo({ center: (e.features![0].geometry as any).coordinates, zoom: zoom + 0.5 });
+      });
+    });
+
     // ── GDELT Conflicts (with source article) ──
     map.on('click', 'gdelt-dots', e => {
       if (!e.features?.length) return;
@@ -604,7 +643,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
 
 
     // ── Generic hover for clickables ──
-    ['conflict-icons','cctv-dots','eq-circles','sat-dots','fires-heat','gdelt-dots','weather-dots','infra-dots','maritime-dots','choke-dots','news-dots','sigint-news-dots','balloon-dots','rad-dots','dep-dots','ship-dots','sweep-device-dots','scan-targets-dots'].forEach(layer => {
+    ['conflict-icons','cctv-dots','eq-circles','sat-dots','fires-heat','gdelt-dots','gdelt-clusters','weather-dots','infra-dots','maritime-dots','choke-dots','news-dots','sigint-news-dots','balloon-dots','rad-dots','dep-dots','ship-dots','sweep-device-dots','scan-targets-dots'].forEach(layer => {
       map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
     });
@@ -867,7 +906,11 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
 
   useEffect(() => {
     if (!mapReady) return;
-    setGeo('gdelt', activeLayers.global_incidents && data.gdelt ? data.gdelt.map((e: any) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [e.lng, e.lat] }, properties: { name: e.name } })) : []);
+    setGeo('gdelt', activeLayers.global_incidents && data.gdelt ? data.gdelt.map((e: any) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [e.lng + (Math.random() - 0.5) * 0.6, e.lat + (Math.random() - 0.5) * 0.6] },
+      properties: { name: e.name }
+    })) : []);
   }, [mapReady, data.gdelt, activeLayers.global_incidents, setGeo]);
 
   useEffect(() => {
@@ -971,7 +1014,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
     if (!mapReady) return;
     setVis(['eq-circles','eq-label'], activeLayers.earthquakes);
     setVis(['sat-dots'], activeLayers.satellites);
-    setVis(['gdelt-dots'], activeLayers.global_incidents);
+    setVis(['gdelt-dots', 'gdelt-clusters', 'gdelt-cluster-count'], activeLayers.global_incidents);
     setVis(['jam-fill','jam-label'], activeLayers.gps_jamming);
     setVis(['day-night-fill'], activeLayers.day_night);
     setVis(['fl-commercial'], activeLayers.flights);
