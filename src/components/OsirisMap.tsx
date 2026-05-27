@@ -686,7 +686,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
       const dsetColors: Record<string, string> = { ext: '#FF3D3D', prv: '#FF9500', dds: '#FFD700', nws: '#00E5FF', vnd: '#E040FB', frm: '#00E676' };
-      const dsetLabels: Record<string, string> = { ext: 'RANSOMWARE', prv: 'PRIVACY BREACH', dds: 'DDOS', nws: 'OPEN NEWS', vnd: 'VANDALISM', frm: 'UNDERGROUND' };
+      const dsetLabels: Record<string, string> = { ext: 'RANSOMWARE', prv: 'PRIVACY BREACH', dds: 'DDOS', nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND' };
       const color = dsetColors[p.dset] || '#FF3D3D';
       const label = dsetLabels[p.dset] || 'BREACH EVENT';
       const location = [p.victimCity, p.victimState, p.victimCC].filter(Boolean).join(', ') || '—';

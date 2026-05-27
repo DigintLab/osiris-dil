@@ -10,7 +10,7 @@ const DSET_COLORS: Record<string, string> = {
 };
 const DSET_LABELS: Record<string, string> = {
   ext: 'RANSOMWARE', prv: 'PRIVACY', dds: 'DDOS',
-  nws: 'NEWS', vnd: 'VANDALISM', frm: 'UNDERGROUND',
+  nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND',
 };
 
 export default function DepPanel() {

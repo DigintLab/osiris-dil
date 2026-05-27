@@ -13,7 +13,7 @@ export const DATASET_LABELS: Record<DepDataset, string> = {
   ext: 'RANSOMWARE',
   prv: 'PRIVACY',
   dds: 'DDOS',
-  nws: 'OPEN NEWS',
+  nws: 'MAJOR BREACH',
   vnd: 'VANDALISM',
   frm: 'UNDERGROUND',
 };
