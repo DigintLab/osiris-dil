@@ -652,7 +652,7 @@ export default function Dashboard() {
         <span className="text-[8px] font-mono tracking-[0.18em] uppercase" style={{ color: 'var(--de-fg-3)' }}>
           Built on{' '}
           <a
-            href="https://osirisai.live"
+            href="https://github.com/simplifaisoul/osiris"
             target="_blank"
             rel="noopener noreferrer"
             className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors"
