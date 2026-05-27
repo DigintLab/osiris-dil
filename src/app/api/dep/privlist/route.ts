@@ -35,11 +35,21 @@ export async function GET(req: NextRequest) {
   try {
     const records = await fetchPrivlist(datasets, ts, te);
 
-    // Diagnostic: log the keys of the first record so we can verify field names
+    // Diagnostic: log keys + first 3 records per dataset to verify field names and geo data
     if (records.length > 0) {
       const sample = records[0];
       console.log('[DEP privlist] sample record keys:', Object.keys(sample));
-      console.log('[DEP privlist] sample geo fields — victimCC:', sample.victimCC, 'victimCity:', sample.victimCity);
+
+      const byDset = records.reduce((acc: Record<string, typeof records>, r) => {
+        (acc[r.dset] = acc[r.dset] || []).push(r);
+        return acc;
+      }, {});
+      for (const [dset, recs] of Object.entries(byDset)) {
+        console.log(`[DEP privlist] ${dset} — first 3 geo fields:`);
+        recs.slice(0, 3).forEach((r, i) => {
+          console.log(`  [${i}] victim="${r.victim}" victimCC=${r.victimCC} victimCountry=${r.victimCountry} victimCity=${r.victimCity}`);
+        });
+      }
     }
 
     let fallbackId = 0;
@@ -47,7 +57,7 @@ export async function GET(req: NextRequest) {
     const victims: DepGeoPoint[] = [];
 
     for (const r of records) {
-      const geo = geocodeVictim(r.victimCity, r.victimCC);
+      const geo = geocodeVictim(r.victimCity, r.victimCC, r.victimCountry ?? null);
       if (!geo) { dropped++; continue; }
 
       victims.push({
