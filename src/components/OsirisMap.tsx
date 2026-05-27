@@ -4,6 +4,41 @@ import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+/**
+ * Spiral (golden-angle / sunflower) jitter for GeoJSON features.
+ * Points that share the same coordinate are fanned out evenly using the
+ * golden angle (~137.5°), so stacked country-centroid events spread into
+ * a natural phyllotaxis pattern instead of a rectangular blob.
+ * Radius scales with √n so small groups stay compact and large groups
+ * spread proportionally across the territory.
+ */
+function spiralJitter(features: any[]): any[] {
+  const GOLDEN_ANGLE = 2.39996; // radians ≈ 137.508°
+  // Group feature indices by rounded coordinate key
+  const groups: Record<string, number[]> = {};
+  features.forEach((f, i) => {
+    const [lng, lat] = f.geometry.coordinates;
+    const key = `${lng.toFixed(2)}_${lat.toFixed(2)}`;
+    (groups[key] = groups[key] || []).push(i);
+  });
+
+  const out = features.map(f => ({ ...f, geometry: { ...f.geometry, coordinates: [...f.geometry.coordinates] } }));
+
+  Object.values(groups).forEach((indices) => {
+    if (indices.length <= 1) return;
+    const n = indices.length;
+    // Max radius in degrees: grows with √n, capped at ~1.2° (~120 km)
+    const maxR = Math.min(1.2, 0.18 * Math.sqrt(n));
+    indices.forEach((idx, k) => {
+      const r = maxR * Math.sqrt((k + 0.5) / n);
+      const theta = k * GOLDEN_ANGLE;
+      out[idx].geometry.coordinates[0] += r * Math.cos(theta);
+      out[idx].geometry.coordinates[1] += r * Math.sin(theta);
+    });
+  });
+  return out;
+}
+
 interface OsirisMapProps {
   data: any;
   activeLayers: Record<string, boolean>;
@@ -96,7 +131,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
     map.on('load', () => {
       mapRef.current = map;
       // Create icons
-      createIcon(map, 'plane-cyan', '#00E5FF', 24);
+      createIcon(map, 'plane-cyan', '#9c9c69', 24);
       createIcon(map, 'plane-green', '#00E676', 24);
       createIcon(map, 'plane-pink', '#FF69B4', 24);
       createIcon(map, 'plane-red', '#FF3D3D', 24);
@@ -108,9 +143,11 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       createDot(map, 'dot-fire', '#FF6B00', 10);
       createDot(map, 'dot-cctv', '#39FF14', 10);
 
-      // Sources
-      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gdelt','gps-jamming','day-night','cctv','fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'dep-threats'];
+      // Sources — gdelt added separately with clustering
+      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gps-jamming','day-night','cctv','fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'dep-threats'];
       sources.forEach(s => map.addSource(s, { type: 'geojson', data: EMPTY_FC }));
+      // GDELT with clustering so country-centroid stacks collapse into clean circles
+      map.addSource('gdelt', { type: 'geojson', data: EMPTY_FC, cluster: true, clusterMaxZoom: 7, clusterRadius: 48 });
 
       // ── CONFLICT ZONES — small warning markers (not polygons) ──
       // Create warning triangle icon
@@ -218,10 +255,37 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         'text-offset': [0, 1.8], 'text-max-width': 12, 'text-allow-overlap': false,
       }, paint: { 'text-color': '#39FF14', 'text-halo-color': '#000', 'text-halo-width': 1, 'text-opacity': 0.7 }});
 
-      // GDELT
-      map.addLayer({ id: 'gdelt-dots', type: 'circle', source: 'gdelt', paint: {
-        'circle-radius': 4, 'circle-color': '#FF3D3D', 'circle-opacity': 0.5, 'circle-stroke-width': 1, 'circle-stroke-color': '#FF3D3D', 'circle-stroke-opacity': 0.3,
-      }});
+      // GDELT — clustered
+      // Cluster bubble
+      map.addLayer({ id: 'gdelt-clusters', type: 'circle', source: 'gdelt',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': ['step', ['get','point_count'], '#b3001b', 10, '#800000', 50, '#630101'],
+          'circle-radius': ['step', ['get','point_count'], 14, 10, 20, 50, 28],
+          'circle-opacity': 0.75,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': 'rgba(179,0,27,0.4)',
+        }
+      });
+      // Cluster count label
+      map.addLayer({ id: 'gdelt-cluster-count', type: 'symbol', source: 'gdelt',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['Open Sans Bold'],
+          'text-size': 11,
+          'text-allow-overlap': true,
+        },
+        paint: { 'text-color': '#eeeeee' }
+      });
+      // Individual unclustered dots
+      map.addLayer({ id: 'gdelt-dots', type: 'circle', source: 'gdelt',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': 4, 'circle-color': '#b3001b', 'circle-opacity': 0.6,
+          'circle-stroke-width': 1, 'circle-stroke-color': '#FF3D3D', 'circle-stroke-opacity': 0.4,
+        }
+      });
 
       // GPS Jamming
       map.addLayer({ id: 'jam-fill', type: 'circle', source: 'gps-jamming', paint: { 'circle-radius': 30, 'circle-color': '#FF0000', 'circle-opacity': 0.15, 'circle-blur': 1 }});
@@ -399,22 +463,22 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       // DEP Breach Events — glow + dot + label, colored by dataset type
       map.addLayer({ id: 'dep-glow', type: 'circle', source: 'dep-threats', paint: {
         'circle-radius': ['interpolate',['linear'],['zoom'], 1,10, 5,18, 10,28],
-        'circle-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#00E5FF','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'circle-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
         'circle-opacity': 0.12, 'circle-blur': 1,
       }});
       map.addLayer({ id: 'dep-dots', type: 'circle', source: 'dep-threats', paint: {
         'circle-radius': ['interpolate',['linear'],['zoom'], 1,4, 5,7, 10,11],
-        'circle-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#00E5FF','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'circle-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
         'circle-opacity': 0.9,
         'circle-stroke-width': 1.5,
-        'circle-stroke-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#00E5FF','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'circle-stroke-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
         'circle-stroke-opacity': 0.5,
       }});
       map.addLayer({ id: 'dep-label', type: 'symbol', source: 'dep-threats', minzoom: 6, layout: {
         'text-field': ['get','victim'], 'text-size': 9, 'text-font': ['Open Sans Regular'],
         'text-offset': [0, 1.8], 'text-max-width': 14, 'text-allow-overlap': false,
       }, paint: {
-        'text-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#00E5FF','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'text-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
         'text-halo-color': '#000', 'text-halo-width': 1.5, 'text-opacity': 0.8,
       }});
 
@@ -483,7 +547,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;">
             <div><span style="color:#5C5A54;font-size:9px;">MODEL</span><br/><span style="color:#E8E6E0;">${p.model||'—'}</span></div>
-            <div><span style="color:#5C5A54;font-size:9px;">ALT</span><br/><span style="color:#00E5FF;">${p.alt?Math.round(p.alt)+'m':'—'}</span></div>
+            <div><span style="color:#5C5A54;font-size:9px;">ALT</span><br/><span style="color:#9c9c69;">${p.alt?Math.round(p.alt)+'m':'—'}</span></div>
             <div><span style="color:#5C5A54;font-size:9px;">SPEED</span><br/><span style="color:#E8E6E0;">${p.speed_knots||'—'}kt</span></div>
             <div><span style="color:#5C5A54;font-size:9px;">HDG</span><br/><span style="color:#E8E6E0;">${Math.round(p.heading||0)}°</span></div>
             <div><span style="color:#5C5A54;font-size:9px;">REG</span><br/><span style="color:#E8E6E0;">${p.registration||'—'}</span></div>
@@ -491,7 +555,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
           </div>
           <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
             <a href="https://www.flightaware.com/live/flight/${cs}" target="_blank" style="${linkStyle}color:#D4AF37;border:1px solid rgba(212,175,55,0.4);background:rgba(212,175,55,0.1);">⚡ FLIGHTAWARE</a>
-            <a href="https://globe.adsbexchange.com/?icao=${p.icao24||''}" target="_blank" style="${linkStyle}color:#00E5FF;border:1px solid rgba(0,229,255,0.4);background:rgba(0,229,255,0.1);">📡 ADS-B</a>
+            <a href="https://globe.adsbexchange.com/?icao=${p.icao24||''}" target="_blank" style="${linkStyle}color:#9c9c69;border:1px solid rgba(156,156,105,0.4);background:rgba(156,156,105,0.1);">📡 ADS-B</a>
             <a href="https://www.radarbox.com/data/flights/${cs}" target="_blank" style="${linkStyle}color:#FF69B4;border:1px solid rgba(255,105,180,0.4);background:rgba(255,105,180,0.1);">📍 RADARBOX</a>
           </div>
         </div>`);
@@ -571,6 +635,16 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       </div>`);
     });
 
+    // ── GDELT cluster — zoom in on click ──
+    map.on('click', 'gdelt-clusters', e => {
+      if (!e.features?.length) return;
+      const clusterId = e.features[0].properties?.cluster_id;
+      (map.getSource('gdelt') as any).getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+        if (err) return;
+        map.easeTo({ center: (e.features![0].geometry as any).coordinates, zoom: zoom + 0.5 });
+      });
+    });
+
     // ── GDELT Conflicts (with source article) ──
     map.on('click', 'gdelt-dots', e => {
       if (!e.features?.length) return;
@@ -604,7 +678,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
 
 
     // ── Generic hover for clickables ──
-    ['conflict-icons','cctv-dots','eq-circles','sat-dots','fires-heat','gdelt-dots','weather-dots','infra-dots','maritime-dots','choke-dots','news-dots','sigint-news-dots','balloon-dots','rad-dots','dep-dots','ship-dots','sweep-device-dots','scan-targets-dots'].forEach(layer => {
+    ['conflict-icons','cctv-dots','eq-circles','sat-dots','fires-heat','gdelt-dots','gdelt-clusters','weather-dots','infra-dots','maritime-dots','choke-dots','news-dots','sigint-news-dots','balloon-dots','rad-dots','dep-dots','ship-dots','sweep-device-dots','scan-targets-dots'].forEach(layer => {
       map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
     });
@@ -618,7 +692,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         <div style="color:#FF3D3D;font-size:12px;font-weight:700;margin-bottom:6px;">🎯 TARGET: ${p.id}</div>
         <div style="font-size:9px;color:#E8E6E0;margin-bottom:8px;">${p.city || 'Unknown'}, ${p.country || 'Unknown'} — ${p.isp || 'Unknown ISP'}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9px;">
-          <div><span style="color:#5C5A54;">TYPE</span><br/><span style="color:#00E5FF;">${(p.type || 'UNKNOWN').toUpperCase()}</span></div>
+          <div><span style="color:#5C5A54;">TYPE</span><br/><span style="color:#9c9c69;">${(p.type || 'UNKNOWN').toUpperCase()}</span></div>
           <div><span style="color:#5C5A54;">COORDS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(3)}°, ${coords[0].toFixed(3)}°</span></div>
         </div>
       </div>`);
@@ -685,7 +759,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       if (!e.features?.length) return;
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
-      const dsetColors: Record<string, string> = { ext: '#FF3D3D', prv: '#FF9500', dds: '#FFD700', nws: '#00E5FF', vnd: '#E040FB', frm: '#00E676' };
+      const dsetColors: Record<string, string> = { ext: '#FF3D3D', prv: '#FF9500', dds: '#FFD700', nws: '#9c9c69', vnd: '#E040FB', frm: '#00E676' };
       const dsetLabels: Record<string, string> = { ext: 'RANSOMWARE', prv: 'PRIVACY BREACH', dds: 'DDOS', nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND' };
       const color = dsetColors[p.dset] || '#FF3D3D';
       const label = dsetLabels[p.dset] || 'BREACH EVENT';
@@ -700,7 +774,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
           <div><span style="color:#5C5A54;">DATE</span><br/><span style="color:#E8E6E0;">${p.date || '—'}</span></div>
           <div><span style="color:#5C5A54;">SECTOR</span><br/><span style="color:#E8E6E0;">${p.sector || '—'}</span></div>
           <div><span style="color:#5C5A54;">LOCATION</span><br/><span style="color:#E8E6E0;">${location}</span></div>
-          ${p.site ? `<div style="grid-column:span 2"><span style="color:#5C5A54;">DOMAIN</span><br/><span style="color:#00E5FF;">${p.site}</span></div>` : ''}
+          ${p.site ? `<div style="grid-column:span 2"><span style="color:#5C5A54;">DOMAIN</span><br/><span style="color:#9c9c69;">${p.site}</span></div>` : ''}
         </div>
         <div style="font-size:8px;color:#5C5A54;">GEOCODE: ${p.geocodeTier === 'city' ? '📍 CITY-LEVEL' : '🌍 COUNTRY-LEVEL'}</div>
       </div>`);
@@ -867,7 +941,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
 
   useEffect(() => {
     if (!mapReady) return;
-    setGeo('gdelt', activeLayers.global_incidents && data.gdelt ? data.gdelt.map((e: any) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [e.lng, e.lat] }, properties: { name: e.name } })) : []);
+    setGeo('gdelt', activeLayers.global_incidents && data.gdelt
+      ? spiralJitter(data.gdelt.map((e: any) => ({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [e.lng, e.lat] },
+          properties: { name: e.name },
+        })))
+      : []);
   }, [mapReady, data.gdelt, activeLayers.global_incidents, setGeo]);
 
   useEffect(() => {
@@ -915,10 +995,10 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
   useEffect(() => {
     if (!mapReady) return;
     setGeo('dep-threats', activeLayers.dep_threats && data.dep_threats
-      ? data.dep_threats.map((v: any) => ({
+      ? spiralJitter(data.dep_threats.map((v: any) => ({
           type: 'Feature', geometry: { type: 'Point', coordinates: [v.lng, v.lat] },
           properties: { victim: v.victim, sector: v.sector, actor: v.actor, date: v.date, site: v.site, dset: v.dset, victimCC: v.victimCC, victimCity: v.victimCity, victimState: v.victimState, geocodeTier: v.geocodeTier },
-        }))
+        })))
       : []);
   }, [mapReady, data.dep_threats, activeLayers.dep_threats, setGeo]);
 
@@ -971,7 +1051,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
     if (!mapReady) return;
     setVis(['eq-circles','eq-label'], activeLayers.earthquakes);
     setVis(['sat-dots'], activeLayers.satellites);
-    setVis(['gdelt-dots'], activeLayers.global_incidents);
+    setVis(['gdelt-dots', 'gdelt-clusters', 'gdelt-cluster-count'], activeLayers.global_incidents);
     setVis(['jam-fill','jam-label'], activeLayers.gps_jamming);
     setVis(['day-night-fill'], activeLayers.day_night);
     setVis(['fl-commercial'], activeLayers.flights);

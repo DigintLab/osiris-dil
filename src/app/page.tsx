@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, BarChart3, Newspaper, Search, Share2, Map as MapIcon, X, Globe, MapPinned, Radar, Satellite, Moon, ExternalLink, AlertTriangle, Building2, RadioTower, Activity, Shield, Database, Wifi } from 'lucide-react';
+import { Layers, BarChart3, Newspaper, Search, Share2, Map as MapIcon, X, Globe, MapPinned, Satellite, Moon, ExternalLink, AlertTriangle, Building2, RadioTower, Activity, Shield, Database, Wifi } from 'lucide-react';
 import IntelFeed from '@/components/IntelFeed';
 import MarketsPanel from '@/components/MarketsPanel';
 import SearchBar from '@/components/SearchBar';
@@ -13,12 +13,11 @@ import SharePanel from '@/components/SharePanel';
 import ViewPresets from '@/components/ViewPresets';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import GlobalStatusBar from '@/components/GlobalStatusBar';
-import LiveAlerts from '@/components/LiveAlerts';
+import VulnFeed from '@/components/VulnFeed';
 
 const OsirisMap = dynamic(() => import('@/components/OsirisMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
 const CameraViewer = dynamic(() => import('@/components/CameraViewer'));
-const OsintPanel = dynamic(() => import('@/components/OsintPanel'));
 const DepPanel = dynamic(() => import('@/components/DepPanel'));
 
 function useIsMobile() {
@@ -112,7 +111,7 @@ export default function Dashboard() {
   const [showMarkets, setShowMarkets] = useState(true);
   const [showIntel, setShowIntel] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState<'layers'|'markets'|'intel'|'search'|'recon'|null>(null);
+  const [mobilePanel, setMobilePanel] = useState<'layers'|'markets'|'intel'|'search'|null>(null);
   const [mapProjection, setMapProjection] = useState<'globe'|'mercator'>('globe');
   const [mapStyle, setMapStyle] = useState<'dark'|'satellite'>('dark');
   const [sweepData, setSweepData] = useState<any>(null);
@@ -426,12 +425,24 @@ export default function Dashboard() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="absolute inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden"
-            style={{ background: 'radial-gradient(ellipse at center, #0a0a14 0%, var(--bg-void) 70%)' }}
+            style={{ background: 'var(--bg-void)' }}
           >
-            {/* ── Scanline CRT overlay ── */}
+            {/* ── Portrait background — left-anchored, fades right ── */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/dil-splash-bg.png"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full pointer-events-none z-[0]"
+              style={{ objectFit: 'cover', objectPosition: 'left center', opacity: 0.85 }}
+            />
+            {/* Fade-right vignette so content area stays readable */}
             <div className="absolute inset-0 pointer-events-none z-[1]" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(212,175,55,0.015) 2px, rgba(212,175,55,0.015) 4px)',
-              animation: 'splashScanDrift 8s linear infinite',
+              background: 'linear-gradient(to right, transparent 0%, rgba(23,0,0,0.55) 50%, rgba(23,0,0,0.92) 75%, #170000 100%)',
+            }} />
+            {/* Bottom fade */}
+            <div className="absolute inset-0 pointer-events-none z-[1]" style={{
+              background: 'linear-gradient(to top, #170000 0%, transparent 30%)',
             }} />
 
             {/* ── V4.2 badge — top-left ── */}
@@ -439,93 +450,53 @@ export default function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               transition={{ delay: 0.8, duration: 0.5 }}
-              className="absolute top-6 left-6 z-[2] font-mono text-[10px] tracking-[0.3em] text-[var(--gold-primary)]"
+              className="absolute top-6 left-6 z-[2] font-mono text-[10px] tracking-[0.3em]" style={{ color: 'var(--de-fg-3)' }}
             >
               V4.2
             </motion.div>
 
 
 
-            {/* ── Geometric tactical logo ── */}
-            <div className="relative w-40 h-40 mb-8 flex items-center justify-center z-[2]">
-              {/* Outer ring — slow clockwise */}
+            {/* ── DIL Logo ── */}
+            <motion.div
+              className="relative mb-8 flex items-center justify-center z-[2]"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+            >
+              {/* Glow halo behind logo */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.6, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: 360 }}
-                transition={{ opacity: { duration: 0.6 }, scale: { duration: 0.8, ease: 'easeOut' }, rotate: { duration: 20, repeat: Infinity, ease: 'linear' } }}
-                className="absolute inset-0 rounded-full"
-                style={{ border: '1px solid rgba(212,175,55,0.2)' }}
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{ background: 'var(--gold-primary)', boxShadow: '0 0 12px var(--gold-primary), 0 0 24px rgba(212,175,55,0.3)' }} />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1 h-1 rounded-full" style={{ background: 'rgba(212,175,55,0.5)', boxShadow: '0 0 6px rgba(212,175,55,0.3)' }} />
-              </motion.div>
-
-              {/* Middle ring — faster counter-clockwise */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.4, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: -360 }}
-                transition={{ opacity: { duration: 0.6, delay: 0.15 }, scale: { duration: 0.8, delay: 0.15, ease: 'easeOut' }, rotate: { duration: 12, repeat: Infinity, ease: 'linear' } }}
-                className="absolute rounded-full"
-                style={{ inset: '18px', border: '1px solid rgba(0,229,255,0.15)' }}
-              >
-                <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--cyan-primary)', boxShadow: '0 0 10px var(--cyan-primary), 0 0 20px rgba(0,229,255,0.2)' }} />
-                <div className="absolute bottom-0 left-1/4 translate-y-1/2 w-1 h-1 rounded-full" style={{ background: 'rgba(0,229,255,0.4)' }} />
-              </motion.div>
-
-              {/* Inner ring — fastest clockwise */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.2, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: 360 }}
-                transition={{ opacity: { duration: 0.6, delay: 0.3 }, scale: { duration: 0.8, delay: 0.3, ease: 'easeOut' }, rotate: { duration: 7, repeat: Infinity, ease: 'linear' } }}
-                className="absolute rounded-full"
-                style={{ inset: '40px', border: '1px solid rgba(212,175,55,0.25)' }}
-              >
-                <div className="absolute top-0 left-1/4 -translate-y-1/2 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--gold-primary)', boxShadow: '0 0 8px var(--gold-primary)' }} />
-              </motion.div>
-
-              {/* Core circle + crosshair */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-                className="relative w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ border: '2px solid var(--gold-primary)', boxShadow: '0 0 20px rgba(212,175,55,0.15), inset 0 0 20px rgba(212,175,55,0.05)' }}
-              >
-                <motion.div
-                  animate={{ opacity: [0.3, 0.8, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-5 h-5 rounded-full"
-                  style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(212,175,55,0.05) 70%)' }}
-                />
-                {/* Crosshair lines */}
-                <div className="absolute w-[1px] h-full" style={{ background: 'linear-gradient(to bottom, transparent, rgba(212,175,55,0.3), transparent)' }} />
-                <div className="absolute w-full h-[1px]" style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.3), transparent)' }} />
-              </motion.div>
-
-              {/* Faint pulsing radar sweep */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.15, 0], rotate: [0, 360] }}
-                transition={{ opacity: { duration: 3, repeat: Infinity }, rotate: { duration: 3, repeat: Infinity, ease: 'linear' }, delay: 0.6 }}
-                className="absolute inset-[10px] rounded-full"
-                style={{ background: 'conic-gradient(from 0deg, transparent 0deg, rgba(212,175,55,0.15) 40deg, transparent 80deg)' }}
+                animate={{ opacity: [0.2, 0.45, 0.2] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-[-20px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at center, rgba(179,0,27,0.25) 0%, transparent 70%)' }}
               />
-            </div>
+              {/* Logo image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/dil-logo-white.png"
+                alt="Digital Intelligence Lab"
+                width={120}
+                height={120}
+                style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 0 24px rgba(179,0,27,0.5))' }}
+              />
+            </motion.div>
 
-            {/* ── OSIRIS title — letter-by-letter stagger ── */}
-            <div className="flex items-center gap-[2px] mb-3 z-[2]">
-              {'OSIRIS'.split('').map((letter, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  transition={{ delay: 0.5 + i * 0.08, duration: 0.5, ease: 'easeOut' }}
-                  className="text-4xl md:text-5xl font-bold tracking-[0.5em] font-mono"
-                  style={{ color: 'var(--text-heading)', textShadow: '0 0 30px rgba(212,175,55,0.2)' }}
-                >
-                  {letter}
-                </motion.span>
-              ))}
+            {/* ── Product title ── */}
+            <div className="flex flex-col items-center gap-1 mb-3 z-[2]">
+              <motion.span
+                initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
+                className="text-3xl md:text-4xl font-bold tracking-[0.08em]"
+                style={{
+                  fontFamily: 'var(--de-font-display)',
+                  color: 'var(--text-heading)',
+                  textShadow: '0 0 40px rgba(179,0,27,0.25)',
+                }}
+              >
+                DIL Observatory
+              </motion.span>
             </div>
 
             {/* ── Subtitle — typewriter reveal ── */}
@@ -536,8 +507,8 @@ export default function Dashboard() {
                 transition={{ delay: 1.2, duration: 0.8, ease: 'easeInOut' }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                <p className="text-[10px] md:text-[11px] font-mono tracking-[0.5em] text-[var(--gold-primary)]" style={{ opacity: 0.8 }}>
-                  GLOBAL INTELLIGENCE PLATFORM
+                <p className="text-[10px] md:text-[11px] font-mono tracking-[0.4em] text-[var(--de-fg-3)]" style={{ opacity: 0.85 }}>
+                  DIGITAL INTELLIGENCE LAB — COMMUNITY DASHBOARD
                 </p>
               </motion.div>
             </div>
@@ -545,13 +516,13 @@ export default function Dashboard() {
             {/* ── Multi-stage progress bar ── */}
             <div className="w-64 md:w-80 z-[2]">
               {/* Thin progress track */}
-              <div className="relative w-full h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(212,175,55,0.1)' }}>
+              <div className="relative w-full h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(128,0,0,0.15)' }}>
                 <motion.div
                   initial={{ width: '0%' }}
                   animate={{ width: ['0%', '25%', '50%', '78%', '100%'] }}
                   transition={{ duration: 2.2, delay: 0.5, times: [0, 0.25, 0.5, 0.75, 1], ease: 'easeInOut' }}
                   className="absolute inset-y-0 left-0 rounded-full"
-                  style={{ background: 'linear-gradient(90deg, var(--gold-primary), var(--cyan-primary), var(--gold-primary))', boxShadow: '0 0 12px rgba(212,175,55,0.4)' }}
+                  style={{ background: 'linear-gradient(90deg, var(--de-accent-deep), var(--de-accent-bright), var(--de-accent-deep))', boxShadow: '0 0 12px rgba(179,0,27,0.5)' }}
                 />
               </div>
 
@@ -580,7 +551,7 @@ export default function Dashboard() {
             {/* ── Decorative grid lines ── */}
             <div className="absolute inset-0 pointer-events-none z-[0]" style={{ opacity: 0.03 }}>
               <div className="absolute inset-0" style={{
-                backgroundImage: 'linear-gradient(rgba(212,175,55,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.5) 1px, transparent 1px)',
+                backgroundImage: 'linear-gradient(rgba(128,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(128,0,0,0.5) 1px, transparent 1px)',
                 backgroundSize: '60px 60px',
               }} />
             </div>
@@ -598,7 +569,7 @@ export default function Dashboard() {
                 animate={{ opacity: 0.3 }}
                 transition={{ delay: 0.8 + i * 0.1, duration: 0.5 }}
                 className="absolute w-8 h-8 z-[2]"
-                style={{ top: pos.t, bottom: pos.b, left: pos.l, right: pos.r, borderWidth: pos.bw, borderStyle: 'solid', borderColor: 'var(--gold-primary)' }}
+                style={{ top: pos.t, bottom: pos.b, left: pos.l, right: pos.r, borderWidth: pos.bw, borderStyle: 'solid', borderColor: 'var(--de-accent-bright)' }}
               />
             ))}
 
@@ -673,33 +644,48 @@ export default function Dashboard() {
         </button>
       </motion.div>
 
+      {/* ── BASED ON OSIRIS ATTRIBUTION ── */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4 }}
+        className="absolute bottom-[75px] md:bottom-[22px] right-[320px] md:right-[340px] z-[200] pointer-events-none hidden md:flex items-center gap-1.5"
+      >
+        <span className="text-[8px] font-mono tracking-[0.18em] uppercase" style={{ color: 'var(--de-fg-3)' }}>
+          Built on{' '}
+          <a
+            href="https://osirisai.live"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors"
+            style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+          >
+            Osiris
+          </a>
+        </span>
+        <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
+        <span className="text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)' }}>Digital Intelligence Lab</span>
+      </motion.div>
+
       {/* ── HEADER ── */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 2.5 }} className={`absolute top-3 left-3 md:top-5 md:left-5 z-[200] pointer-events-none flex items-center gap-2 md:gap-3`}>
-        <div className="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center relative">
-          {/* Ambient glow ring — slow rotating */}
-          <div className="absolute inset-[-4px] md:inset-[-5px] rounded-full border border-[var(--gold-primary)]/20" style={{ animation: 'osiris-rotate 12s linear infinite' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[var(--gold-primary)] shadow-[0_0_6px_var(--gold-primary)]" />
-          </div>
-          <div className="absolute inset-[-8px] md:inset-[-10px] rounded-full border border-[var(--gold-primary)]/10" style={{ animation: 'osiris-rotate 20s linear infinite reverse' }}>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-0.5 h-0.5 rounded-full bg-[var(--gold-primary)]/60" />
-          </div>
-          <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border-2 border-[var(--gold-primary)] flex items-center justify-center animate-glow-pulse">
-            <div className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-[var(--gold-primary)]/30 border border-[var(--gold-primary)]/60" />
-          </div>
-          <div className="absolute w-[1px] h-full bg-[var(--gold-primary)]/30" />
-          <div className="absolute w-full h-[1px] bg-[var(--gold-primary)]/30" />
-        </div>
+        {/* DIL Logo mark */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/dil-logo-white.png"
+          alt="Digital Intelligence Lab"
+          style={{
+            width: 28, height: 28,
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 0 8px rgba(179,0,27,0.6))',
+          }}
+          className="md:w-9 md:h-9"
+        />
         {/* Horizontal rule extending from logo */}
         <div className="hidden md:block absolute top-1/2 left-[52px] w-[200px] h-[1px] bg-gradient-to-r from-[var(--gold-primary)]/40 via-[var(--gold-primary)]/15 to-transparent" />
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <h1 className="text-base md:text-xl font-bold tracking-[0.4em] md:tracking-[0.5em] text-[var(--text-heading)] font-mono">OSIRIS</h1>
-            <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-[1px] rounded-sm border border-[var(--cyan-primary)]/40 bg-[var(--cyan-primary)]/10 text-[7px] font-mono font-bold tracking-[0.15em] text-[var(--cyan-primary)] uppercase" style={{ lineHeight: '1.4' }}>
-              <Globe className="w-2.5 h-2.5" />
-              OPEN SOURCE
-            </span>
+            <h1 className="text-base md:text-lg font-bold tracking-[0.25em] text-[var(--text-heading)]" style={{ fontFamily: 'var(--font-display)' }}>DIL Observatory</h1>
           </div>
-          <span className="text-[8px] md:text-[9px] text-[var(--gold-primary)] font-mono tracking-[0.2em] md:tracking-[0.3em] opacity-80">GLOBAL INTELLIGENCE COMMAND</span>
+          <span className="text-[8px] md:text-[9px] text-[var(--de-fg-3)] font-mono tracking-[0.2em] md:tracking-[0.25em] opacity-90">DIGITAL INTELLIGENCE LAB</span>
         </div>
       </motion.div>
 
@@ -725,19 +711,11 @@ export default function Dashboard() {
         </span>
 
         <UptimeClock />
-        
-        <a href='https://ko-fi.com/M8D41ZYW4Z' target='_blank' className="pointer-events-auto hover:opacity-80 transition-opacity ml-1 flex items-center">
-          <span className="px-3 py-1 rounded-sm border border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] text-[11px] font-bold tracking-[0.2em]">SUPPORT PROJECT</span>
-        </a>
       </motion.div>
 
       {/* ── MOBILE: Compact top status ── */}
       {isMobile && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }} className="absolute top-3 right-3 z-[200] pointer-events-auto flex items-center gap-2">
-          <a href='https://ko-fi.com/M8D41ZYW4Z' target='_blank' className="glass-panel px-2 py-1 flex items-center gap-1.5 text-[7px] font-mono tracking-widest hover:opacity-80 transition-opacity border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10">
-            <div className="w-1 h-1 rounded-full bg-[var(--gold-primary)] animate-osiris-pulse" />
-            <span className="text-[var(--gold-primary)] font-bold">SUPPORT PROJECT</span>
-          </a>
         </motion.div>
       )}
 
@@ -748,15 +726,6 @@ export default function Dashboard() {
         {showLayers && (
           <>
             <LayerPanel data={data} activeLayers={activeLayers} setActiveLayers={setActiveLayers} />
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} className="glass-panel px-3 py-2.5 pointer-events-auto">
-              <div className="grid grid-cols-5 gap-2 text-center">
-                <div><div className="hud-label">AIRCRAFT</div><div className="hud-value text-[10px] animate-data-pulse">{globalStats ? globalStats.flights.toLocaleString() : '0'}</div></div>
-                <div><div className="hud-label">SATS</div><div className="hud-value text-[10px]">{globalStats ? globalStats.sats.toLocaleString() : '0'}</div></div>
-                <div><div className="hud-label">CCTV</div><div className="hud-value text-[10px]">{globalStats ? globalStats.cctv.toLocaleString() : '0'}</div></div>
-                <div><div className="hud-label">WEATHER</div><div className="hud-value text-[10px]" style={{ color: '#E040FB' }}>{globalStats ? globalStats.weather.toLocaleString() : '0'}</div></div>
-                <div><div className="hud-label">NUCLEAR</div><div className="hud-value text-[10px]" style={{ color: '#76FF03' }}>{globalStats ? globalStats.nuclear.toLocaleString() : '0'}</div></div>
-              </div>
-            </motion.div>
             <ViewPresets onNavigate={(lat, lng, zoom) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMapView(v => ({ ...v, zoom })); }} />
           </>
         )}
@@ -764,21 +733,14 @@ export default function Dashboard() {
         {showIntel && <IntelFeed data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} />}
       </div>
 
-      {/* ── RIGHT HUD (desktop): Search + RECON + Live Alerts ── */}
+      {/* ── RIGHT HUD (desktop): Search + Vuln Feed ── */}
       <div className="desktop-panel absolute right-5 top-20 bottom-24 w-80 flex flex-col gap-3 z-[200] pointer-events-auto overflow-y-auto styled-scrollbar pr-1">
         <div className="flex gap-2 items-start">
           <div className="flex-1"><SearchBar onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} /></div>
           <div className="relative"><SharePanel mapView={mapView} activeLayers={activeLayers} mouseCoords={null} /></div>
         </div>
-        <OsintPanel onSweepVisualize={setSweepData} onScanGeolocate={(target, data) => {
-          setScanTargets(prev => {
-            const existing = prev.filter(t => t.id !== target);
-            return [{ id: target, timestamp: Date.now(), ...data }, ...existing].slice(0, 10);
-          });
-          setFlyToLocation({ lat: data.lat, lng: data.lng, ts: Date.now() });
-        }} />
         {process.env.NEXT_PUBLIC_DEP_SEARCH === 'true' && <DepPanel />}
-        <LiveAlerts data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} onWatchFeed={(url, name) => { setLiveFeedUrl(url); setLiveFeedName(name); }} />
+        <VulnFeed />
       </div>
 
       {/* ── LIVE FEED VIEWER OVERLAY ── */}
@@ -892,13 +854,12 @@ export default function Dashboard() {
                 { id: 'layers' as const, icon: Layers, label: 'LAYERS' },
                 { id: 'markets' as const, icon: BarChart3, label: 'MARKETS' },
                 { id: 'intel' as const, icon: Newspaper, label: 'INTEL' },
-                { id: 'recon' as const, icon: Radar, label: 'RECON' },
                 { id: 'search' as const, icon: Search, label: 'SEARCH' },
               ].map(tab => (
                 <button key={tab.id} onClick={() => setMobilePanel(mobilePanel === tab.id ? null : tab.id)}
                   className={`mobile-nav-btn ${mobilePanel === tab.id ? 'active' : ''}`}>
-                  <tab.icon className={`w-4 h-4 ${tab.id === 'recon' ? 'text-[var(--cyan-primary)]' : ''}`} />
-                  <span className={tab.id === 'recon' ? 'text-[var(--cyan-primary)]' : ''}>{tab.label}</span>
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -944,11 +905,6 @@ export default function Dashboard() {
                     <div className="space-y-2">
                       <SearchBar onLocate={(lat, lng) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMobilePanel(null); }} />
                       <SharePanel mapView={mapView} activeLayers={activeLayers} mouseCoords={null} />
-                    </div>
-                  )}
-                  {mobilePanel === 'recon' && (
-                    <div className="space-y-2">
-                      <OsintPanel isOpen={true} onClose={() => setMobilePanel(null)} isMobile={true} onSweepVisualize={setSweepData} />
                     </div>
                   )}
                 </div>
