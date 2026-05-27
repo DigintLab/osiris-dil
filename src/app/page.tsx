@@ -13,6 +13,7 @@ import SharePanel from '@/components/SharePanel';
 import ViewPresets from '@/components/ViewPresets';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import GlobalStatusBar from '@/components/GlobalStatusBar';
+import VulnFeed from '@/components/VulnFeed';
 
 const OsirisMap = dynamic(() => import('@/components/OsirisMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
@@ -732,13 +733,14 @@ export default function Dashboard() {
         {showIntel && <IntelFeed data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} />}
       </div>
 
-      {/* ── RIGHT HUD (desktop): Search + Live Alerts ── */}
+      {/* ── RIGHT HUD (desktop): Search + Vuln Feed ── */}
       <div className="desktop-panel absolute right-5 top-20 bottom-24 w-80 flex flex-col gap-3 z-[200] pointer-events-auto overflow-y-auto styled-scrollbar pr-1">
         <div className="flex gap-2 items-start">
           <div className="flex-1"><SearchBar onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} /></div>
           <div className="relative"><SharePanel mapView={mapView} activeLayers={activeLayers} mouseCoords={null} /></div>
         </div>
         {process.env.NEXT_PUBLIC_DEP_SEARCH === 'true' && <DepPanel />}
+        <VulnFeed />
       </div>
 
       {/* ── LIVE FEED VIEWER OVERLAY ── */}
