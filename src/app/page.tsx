@@ -665,7 +665,7 @@ export default function Dashboard() {
         <span className="text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)' }}>Digital Intelligence Lab</span>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
         <a
-          href="/LICENSE"
+          href="https://opensource.org/license/mit"
           target="_blank"
           rel="noopener noreferrer"
           className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em] uppercase"
@@ -675,7 +675,7 @@ export default function Dashboard() {
         </a>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
         <a
-          href="/LICENSE-DATA"
+          href="https://creativecommons.org/licenses/by-nd/4.0/deed.en"
           target="_blank"
           rel="noopener noreferrer"
           className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em] uppercase"
