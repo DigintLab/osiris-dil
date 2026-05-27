@@ -426,11 +426,11 @@ export default function Dashboard() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="absolute inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden"
-            style={{ background: 'radial-gradient(ellipse at center, #0a0a14 0%, var(--bg-void) 70%)' }}
+            style={{ background: 'radial-gradient(ellipse at center, #2a0808 0%, var(--bg-void) 70%)' }}
           >
-            {/* ── Scanline CRT overlay ── */}
+            {/* ── Subtle grain overlay ── */}
             <div className="absolute inset-0 pointer-events-none z-[1]" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(212,175,55,0.015) 2px, rgba(212,175,55,0.015) 4px)',
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(128,0,0,0.012) 2px, rgba(128,0,0,0.012) 4px)',
               animation: 'splashScanDrift 8s linear infinite',
             }} />
 
@@ -439,7 +439,7 @@ export default function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               transition={{ delay: 0.8, duration: 0.5 }}
-              className="absolute top-6 left-6 z-[2] font-mono text-[10px] tracking-[0.3em] text-[var(--gold-primary)]"
+              className="absolute top-6 left-6 z-[2] font-mono text-[10px] tracking-[0.3em]" style={{ color: 'var(--de-fg-3)' }}
             >
               V4.2
             </motion.div>
@@ -512,20 +512,21 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* ── OSIRIS title — letter-by-letter stagger ── */}
-            <div className="flex items-center gap-[2px] mb-3 z-[2]">
-              {'OSIRIS'.split('').map((letter, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  transition={{ delay: 0.5 + i * 0.08, duration: 0.5, ease: 'easeOut' }}
-                  className="text-4xl md:text-5xl font-bold tracking-[0.5em] font-mono"
-                  style={{ color: 'var(--text-heading)', textShadow: '0 0 30px rgba(212,175,55,0.2)' }}
-                >
-                  {letter}
-                </motion.span>
-              ))}
+            {/* ── Product title ── */}
+            <div className="flex flex-col items-center gap-1 mb-3 z-[2]">
+              <motion.span
+                initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
+                className="text-3xl md:text-4xl font-bold tracking-[0.08em]"
+                style={{
+                  fontFamily: 'var(--de-font-display)',
+                  color: 'var(--text-heading)',
+                  textShadow: '0 0 40px rgba(179,0,27,0.25)',
+                }}
+              >
+                DIL Observatory
+              </motion.span>
             </div>
 
             {/* ── Subtitle — typewriter reveal ── */}
@@ -536,8 +537,8 @@ export default function Dashboard() {
                 transition={{ delay: 1.2, duration: 0.8, ease: 'easeInOut' }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                <p className="text-[10px] md:text-[11px] font-mono tracking-[0.5em] text-[var(--gold-primary)]" style={{ opacity: 0.8 }}>
-                  GLOBAL INTELLIGENCE PLATFORM
+                <p className="text-[10px] md:text-[11px] font-mono tracking-[0.4em] text-[var(--de-fg-3)]" style={{ opacity: 0.85 }}>
+                  DIGITAL INTELLIGENCE LAB — COMMUNITY DASHBOARD
                 </p>
               </motion.div>
             </div>
@@ -545,13 +546,13 @@ export default function Dashboard() {
             {/* ── Multi-stage progress bar ── */}
             <div className="w-64 md:w-80 z-[2]">
               {/* Thin progress track */}
-              <div className="relative w-full h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(212,175,55,0.1)' }}>
+              <div className="relative w-full h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(128,0,0,0.15)' }}>
                 <motion.div
                   initial={{ width: '0%' }}
                   animate={{ width: ['0%', '25%', '50%', '78%', '100%'] }}
                   transition={{ duration: 2.2, delay: 0.5, times: [0, 0.25, 0.5, 0.75, 1], ease: 'easeInOut' }}
                   className="absolute inset-y-0 left-0 rounded-full"
-                  style={{ background: 'linear-gradient(90deg, var(--gold-primary), var(--cyan-primary), var(--gold-primary))', boxShadow: '0 0 12px rgba(212,175,55,0.4)' }}
+                  style={{ background: 'linear-gradient(90deg, var(--de-accent-deep), var(--de-accent-bright), var(--de-accent-deep))', boxShadow: '0 0 12px rgba(179,0,27,0.5)' }}
                 />
               </div>
 
@@ -580,7 +581,7 @@ export default function Dashboard() {
             {/* ── Decorative grid lines ── */}
             <div className="absolute inset-0 pointer-events-none z-[0]" style={{ opacity: 0.03 }}>
               <div className="absolute inset-0" style={{
-                backgroundImage: 'linear-gradient(rgba(212,175,55,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.5) 1px, transparent 1px)',
+                backgroundImage: 'linear-gradient(rgba(128,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(128,0,0,0.5) 1px, transparent 1px)',
                 backgroundSize: '60px 60px',
               }} />
             </div>
@@ -598,7 +599,7 @@ export default function Dashboard() {
                 animate={{ opacity: 0.3 }}
                 transition={{ delay: 0.8 + i * 0.1, duration: 0.5 }}
                 className="absolute w-8 h-8 z-[2]"
-                style={{ top: pos.t, bottom: pos.b, left: pos.l, right: pos.r, borderWidth: pos.bw, borderStyle: 'solid', borderColor: 'var(--gold-primary)' }}
+                style={{ top: pos.t, bottom: pos.b, left: pos.l, right: pos.r, borderWidth: pos.bw, borderStyle: 'solid', borderColor: 'var(--de-accent-bright)' }}
               />
             ))}
 
@@ -673,33 +674,54 @@ export default function Dashboard() {
         </button>
       </motion.div>
 
+      {/* ── BASED ON OSIRIS ATTRIBUTION ── */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4 }}
+        className="absolute bottom-[75px] md:bottom-[22px] right-[320px] md:right-[340px] z-[200] pointer-events-none hidden md:flex items-center gap-1.5"
+      >
+        <span className="text-[8px] font-mono tracking-[0.18em] uppercase" style={{ color: 'var(--de-fg-3)' }}>
+          Built on{' '}
+          <a
+            href="https://osirisai.live"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors"
+            style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+          >
+            Osiris
+          </a>
+        </span>
+        <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
+        <span className="text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)' }}>Digital Intelligence Lab</span>
+      </motion.div>
+
       {/* ── HEADER ── */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 2.5 }} className={`absolute top-3 left-3 md:top-5 md:left-5 z-[200] pointer-events-none flex items-center gap-2 md:gap-3`}>
         <div className="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center relative">
           {/* Ambient glow ring — slow rotating */}
-          <div className="absolute inset-[-4px] md:inset-[-5px] rounded-full border border-[var(--gold-primary)]/20" style={{ animation: 'osiris-rotate 12s linear infinite' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[var(--gold-primary)] shadow-[0_0_6px_var(--gold-primary)]" />
+          <div className="absolute inset-[-4px] md:inset-[-5px] rounded-full border border-[var(--de-accent-bright)]/30" style={{ animation: 'osiris-rotate 12s linear infinite' }}>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[var(--de-accent-bright)] shadow-[0_0_6px_var(--de-accent-bright)]" />
           </div>
-          <div className="absolute inset-[-8px] md:inset-[-10px] rounded-full border border-[var(--gold-primary)]/10" style={{ animation: 'osiris-rotate 20s linear infinite reverse' }}>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-0.5 h-0.5 rounded-full bg-[var(--gold-primary)]/60" />
+          <div className="absolute inset-[-8px] md:inset-[-10px] rounded-full border border-[var(--de-accent)]/15" style={{ animation: 'osiris-rotate 20s linear infinite reverse' }}>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-0.5 h-0.5 rounded-full bg-[var(--de-accent)]/60" />
           </div>
-          <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border-2 border-[var(--gold-primary)] flex items-center justify-center animate-glow-pulse">
-            <div className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-[var(--gold-primary)]/30 border border-[var(--gold-primary)]/60" />
+          <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border-2 border-[var(--de-accent-bright)] flex items-center justify-center animate-glow-pulse">
+            <div className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-[var(--de-accent)]/30 border border-[var(--de-accent-bright)]/60" />
           </div>
-          <div className="absolute w-[1px] h-full bg-[var(--gold-primary)]/30" />
-          <div className="absolute w-full h-[1px] bg-[var(--gold-primary)]/30" />
+          <div className="absolute w-[1px] h-full bg-[var(--de-accent)]/30" />
+          <div className="absolute w-full h-[1px] bg-[var(--de-accent)]/30" />
         </div>
         {/* Horizontal rule extending from logo */}
         <div className="hidden md:block absolute top-1/2 left-[52px] w-[200px] h-[1px] bg-gradient-to-r from-[var(--gold-primary)]/40 via-[var(--gold-primary)]/15 to-transparent" />
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <h1 className="text-base md:text-xl font-bold tracking-[0.4em] md:tracking-[0.5em] text-[var(--text-heading)] font-mono">OSIRIS</h1>
-            <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-[1px] rounded-sm border border-[var(--cyan-primary)]/40 bg-[var(--cyan-primary)]/10 text-[7px] font-mono font-bold tracking-[0.15em] text-[var(--cyan-primary)] uppercase" style={{ lineHeight: '1.4' }}>
+            <h1 className="text-base md:text-lg font-bold tracking-[0.25em] text-[var(--text-heading)]" style={{ fontFamily: 'var(--font-display)' }}>DIL Observatory</h1>
+            <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-[1px] rounded-sm border border-[var(--de-accent-bright)]/40 bg-[var(--de-accent)]/15 text-[7px] font-mono font-bold tracking-[0.15em] text-[var(--de-fg-2)] uppercase" style={{ lineHeight: '1.4' }}>
               <Globe className="w-2.5 h-2.5" />
               OPEN SOURCE
             </span>
           </div>
-          <span className="text-[8px] md:text-[9px] text-[var(--gold-primary)] font-mono tracking-[0.2em] md:tracking-[0.3em] opacity-80">GLOBAL INTELLIGENCE COMMAND</span>
+          <span className="text-[8px] md:text-[9px] text-[var(--de-fg-3)] font-mono tracking-[0.2em] md:tracking-[0.25em] opacity-90">DIGITAL INTELLIGENCE LAB</span>
         </div>
       </motion.div>
 

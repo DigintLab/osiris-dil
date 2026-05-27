@@ -1,71 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   OSIRIS — Global Intelligence Platform Design System
-   Egyptian Mythology × Dark Ops × Glassmorphism
+   DIL OBSERVATORY — Digital Intelligence Lab
+   Design system: Double Extortion DS × Osiris Intelligence Core
+   Charcoal-Burgundy × Poppins × JetBrains Mono
    ═══════════════════════════════════════════════════════════════ */
 
+/* ── Double Extortion Design System tokens (DigintLab brand) ── */
 :root {
-  /* ── Core Palette ── */
-  --bg-void: #04040A;
-  --bg-primary: #06060C;
-  --bg-secondary: #0C0E1A;
-  --bg-tertiary: #121628;
-  --bg-panel: rgba(8, 10, 20, 0.88);
-  --bg-panel-solid: #0C0E1A;
+  /* --- DE Brand Palette --- */
+  --de-bg-deep:        #170000;
+  --de-bg:             #250000;
+  --de-bg-soft:        #211f1f;
+  --de-bg-gradient:    linear-gradient(180deg, #1a1818 0%, #200000 100%);
+  --de-surface:        #292929;
+  --de-surface-2:      #3a2222;
+  --de-surface-3:      #730000;
+  --de-divider:        #4a2c2c;
+  --de-accent:         #800000;
+  --de-accent-deep:    #630101;
+  --de-accent-bright:  #b3001b;
+  --de-warning:        #9c9c69;
+  --de-warning-bg:     #ffb84a;
+  --de-fg-1:           #eeeeee;
+  --de-fg-2:           #c9bcbc;
+  --de-fg-3:           #8a7777;
+  --de-success:        #19a974;
+  --de-info:           #357edd;
+  --de-danger:         #e7040f;
+  --de-warn:           #ffb700;
+  --de-shadow-1:       0 0 4px 2px rgba(0, 0, 0, 0.20);
+  --de-shadow-2:       0 0 8px 2px rgba(0, 0, 0, 0.25);
+  --de-shadow-3:       0 8px 24px rgba(0, 0, 0, 0.45);
+  --de-glow-red:       0 0 24px rgba(179, 0, 27, 0.45);
+  --de-radius-sm:      4px;
+  --de-radius-md:      8px;
+  --de-radius-lg:      16px;
+  --de-font-display:   "Poppins", "Inter", system-ui, sans-serif;
+  --de-font-sans:      "Poppins", "Inter", system-ui, sans-serif;
+  --de-font-mono:      "JetBrains Mono", ui-monospace, monospace;
+  --de-ease-standard:  cubic-bezier(0.4, 0, 0.2, 1);
+  --de-dur-1:          200ms;
+  --de-dur-2:          300ms;
+  --de-dur-3:          500ms;
+}
 
-  /* ── Gold Accent (Eye of Horus) ── */
+:root {
+  /* ── Core Palette — bridged to DE charcoal-burgundy canvas ── */
+  --bg-void:        #170000;
+  --bg-primary:     #1a1818;
+  --bg-secondary:   #211f1f;
+  --bg-tertiary:    #250000;
+  --bg-panel:       rgba(26, 5, 5, 0.92);
+  --bg-panel-solid: #291010;
+
+  /* ── Gold Accent (Eye of Horus — retained for OSIRIS data indicators) ── */
   --gold-primary: #D4AF37;
-  --gold-light: #F0D060;
-  --gold-dim: #8B7325;
-  --gold-glow: rgba(212, 175, 55, 0.3);
+  --gold-light:   #F0D060;
+  --gold-dim:     #8B7325;
+  --gold-glow:    rgba(212, 175, 55, 0.3);
 
-  /* ── Cyan Intel Stream ── */
+  /* ── Primary action accent — DE burgundy ── */
+  --accent-primary:  #800000;
+  --accent-bright:   #b3001b;
+  --accent-dim:      #630101;
+  --accent-glow:     rgba(128, 0, 0, 0.35);
+
+  /* ── Cyan Intel Stream (retained for live data streams) ── */
   --cyan-primary: #00E5FF;
-  --cyan-dim: #006B7A;
-  --cyan-glow: rgba(0, 229, 255, 0.15);
+  --cyan-dim:     #006B7A;
+  --cyan-glow:    rgba(0, 229, 255, 0.15);
 
-  /* ── Alert Colors ── */
-  --alert-red: #FF3D3D;
-  --alert-orange: #FF9500;
-  --alert-green: #00E676;
-  --alert-blue: #448AFF;
+  /* ── Alert / Severity ── */
+  --alert-red:    #e7040f;
+  --alert-orange: #ffb700;
+  --alert-green:  #19a974;
+  --alert-blue:   #357edd;
 
   /* ── Borders ── */
-  --border-primary: rgba(212, 175, 55, 0.15);
-  --border-secondary: rgba(212, 175, 55, 0.08);
-  --border-active: rgba(212, 175, 55, 0.4);
-  --border-cyan: rgba(0, 229, 255, 0.2);
+  --border-primary:   rgba(128, 0, 0, 0.25);
+  --border-secondary: rgba(128, 0, 0, 0.12);
+  --border-active:    rgba(179, 0, 27, 0.55);
+  --border-cyan:      rgba(0, 229, 255, 0.18);
+  --border-gold:      rgba(212, 175, 55, 0.2);
 
   /* ── Text ── */
-  --text-primary: #E8E6E0;
-  --text-secondary: #9B978E;
-  --text-muted: #5C5A54;
-  --text-heading: #F5F0E0;
-  --text-gold: #D4AF37;
-  --text-cyan: #00E5FF;
+  --text-primary:  #eeeeee;
+  --text-secondary: #c9bcbc;
+  --text-muted:    #8a7777;
+  --text-heading:  #f5eded;
+  --text-gold:     #D4AF37;
+  --text-cyan:     #00E5FF;
+  --text-accent:   #b3001b;
 
   /* ── Scrollbar ── */
-  --scrollbar-thumb: rgba(212, 175, 55, 0.2);
-  --scrollbar-thumb-hover: rgba(212, 175, 55, 0.4);
+  --scrollbar-thumb:       rgba(128, 0, 0, 0.3);
+  --scrollbar-thumb-hover: rgba(179, 0, 27, 0.5);
 
   /* ── Hover ── */
-  --hover-accent: rgba(212, 175, 55, 0.08);
+  --hover-accent: rgba(128, 0, 0, 0.1);
 
   /* ── Fonts ── */
-  --font-hud: 'JetBrains Mono', 'Courier New', monospace;
-  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-display: "Poppins", "Inter", system-ui, sans-serif;
+  --font-hud:     'JetBrains Mono', 'Courier New', monospace;
+  --font-body:    "Poppins", "Inter", -apple-system, sans-serif;
 
   /* ── Spacing (responsive) ── */
   --panel-gap: 12px;
-  --edge-pad: 20px;
+  --edge-pad:  20px;
 }
 
 @theme inline {
   --color-background: var(--bg-void);
   --color-foreground: var(--text-primary);
-  --font-sans: var(--font-body);
+  --font-sans: var(--font-display);
   --font-mono: var(--font-hud);
 }
 
@@ -75,7 +124,7 @@
 html, body {
   margin: 0; padding: 0; width: 100%; height: 100%;
   overflow: hidden;
-  background: var(--bg-void);
+  background: var(--de-bg-gradient);
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -95,29 +144,94 @@ html, body {
    GLASS PANELS — Premium depth with micro-reflections
    ═══════════════════════════════════════════════════════════════ */
 .glass-panel {
-  background: var(--bg-panel);
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  background: rgba(26, 5, 5, 0.90);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--de-radius-md);
   box-shadow:
-    0 4px 30px rgba(0, 0, 0, 0.5),
-    0 1px 0 rgba(212, 175, 55, 0.06) inset,
-    0 -1px 0 rgba(0, 0, 0, 0.3) inset;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    var(--de-shadow-3),
+    0 1px 0 rgba(128, 0, 0, 0.08) inset;
+  transition: border-color var(--de-dur-1) var(--de-ease-standard),
+              box-shadow var(--de-dur-1) var(--de-ease-standard);
 }
 
 .glass-panel:hover {
-  border-color: rgba(212, 175, 55, 0.22);
+  border-color: rgba(179, 0, 27, 0.35);
+  box-shadow: var(--de-shadow-3), var(--de-glow-red);
 }
 
 .glass-panel-sm {
-  background: var(--bg-panel);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(26, 5, 5, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-secondary);
-  border-radius: 10px;
+  border-radius: var(--de-radius-sm);
 }
+
+/* ── DE Surface panels — solid, no blur, data-grid style ── */
+.de-panel {
+  background: var(--de-surface);
+  border: 1px solid var(--de-divider);
+  border-radius: var(--de-radius-md);
+  box-shadow: var(--de-shadow-2);
+  transition: box-shadow var(--de-dur-1) var(--de-ease-standard);
+}
+.de-panel:hover {
+  box-shadow: var(--de-shadow-3);
+}
+
+/* ── DE Severity badges ── */
+.de-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 9999px;
+  font-size: 11px; font-family: var(--font-body); font-weight: 500;
+}
+.de-badge .de-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.de-badge-crit  { background: rgba(231,4,15,.15);  color: #ff6b6b;  border: 1px solid rgba(231,4,15,.5);   }
+.de-badge-crit  .de-dot { background: #e7040f; }
+.de-badge-high  { background: rgba(179,0,27,.18);  color: #eebbbb;  border: 1px solid rgba(179,0,27,.5);   }
+.de-badge-high  .de-dot { background: #b3001b; }
+.de-badge-med   { background: rgba(255,183,0,.12); color: #ffd571;  border: 1px solid rgba(255,183,0,.4);  }
+.de-badge-med   .de-dot { background: #ffb700; }
+.de-badge-low   { background: rgba(156,156,105,.15); color: #d4d4a3; border: 1px solid rgba(156,156,105,.5); }
+.de-badge-low   .de-dot { background: #9c9c69; }
+.de-badge-info  { background: rgba(53,126,221,.12); color: #9bbef0; border: 1px solid rgba(53,126,221,.5); }
+.de-badge-info  .de-dot { background: #357edd; }
+.de-badge-ok    { background: rgba(25,169,116,.12); color: #7ed4a8; border: 1px solid rgba(25,169,116,.45); }
+.de-badge-ok    .de-dot { background: #19a974; }
+
+/* ── DE Button styles ── */
+.btn-de-primary {
+  background: var(--de-accent); color: var(--de-fg-1);
+  border: none; border-radius: var(--de-radius-sm);
+  padding: 7px 16px; font-size: 13px; font-family: var(--font-body); font-weight: 500;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: background var(--de-dur-1) var(--de-ease-standard);
+}
+.btn-de-primary:hover { background: var(--de-accent-bright); }
+
+.btn-de-outlined {
+  background: transparent; color: var(--de-fg-1);
+  border: 1px solid rgba(255,255,255,0.3); border-radius: var(--de-radius-sm);
+  padding: 7px 16px; font-size: 13px; font-family: var(--font-body); font-weight: 500;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: all var(--de-dur-1) var(--de-ease-standard);
+}
+.btn-de-outlined:hover { background: rgba(255,255,255,0.05); border-color: var(--de-fg-1); }
+
+/* ── DE Arrow nav tabs (sidebar items) ── */
+.de-nav-tab {
+  clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%);
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; color: var(--de-fg-2); font-size: 13px;
+  font-family: var(--font-body); cursor: pointer;
+  border-radius: var(--de-radius-sm);
+  transition: background var(--de-dur-1) var(--de-ease-standard),
+              color var(--de-dur-1) var(--de-ease-standard);
+}
+.de-nav-tab:hover:not(.active) { background: rgba(255,255,255,0.04); color: var(--de-fg-1); }
+.de-nav-tab.active { background: var(--de-accent); color: var(--de-fg-1); }
 
 /* ── Osiris Gold Glow ── */
 .osiris-glow {
@@ -650,25 +764,23 @@ html, body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-primary);
-  background: rgba(212, 175, 55, 0.08);
+  background: rgba(128, 0, 0, 0.12);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--de-radius-sm);
   padding: 10px 20px;
   cursor: pointer;
   transition:
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform 0.2s var(--de-ease-standard),
+    box-shadow 0.2s var(--de-ease-standard),
+    border-color 0.2s var(--de-ease-standard),
+    background 0.2s var(--de-ease-standard);
   will-change: transform;
 }
 
 .btn-tactical:hover {
-  background: rgba(212, 175, 55, 0.14);
+  background: rgba(179, 0, 27, 0.18);
   border-color: var(--border-active);
-  box-shadow:
-    0 0 20px rgba(212, 175, 55, 0.12),
-    0 0 50px rgba(212, 175, 55, 0.06);
+  box-shadow: var(--de-glow-red);
 }
 
 .btn-tactical:active {
@@ -680,8 +792,8 @@ html, body {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--gold-glow);
-  animation: btn-flash 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  background: var(--accent-glow);
+  animation: btn-flash 0.3s var(--de-ease-standard) forwards;
   pointer-events: none;
 }
 
@@ -1416,15 +1528,14 @@ html, body {
   height: 48px;
   background: linear-gradient(
     180deg,
-    rgba(12, 14, 26, 0.96) 0%,
-    rgba(6, 6, 12, 0.98) 100%
+    rgba(26, 8, 8, 0.97) 0%,
+    rgba(18, 3, 3, 0.99) 100%
   );
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
   border-bottom: 1px solid transparent;
-  /* Gradient border via background-image on pseudo-element */
   box-shadow:
-    0 1px 0 rgba(212, 175, 55, 0.08) inset,
+    0 1px 0 rgba(128, 0, 0, 0.12) inset,
     0 4px 24px rgba(0, 0, 0, 0.5),
     0 1px 3px rgba(0, 0, 0, 0.3);
   z-index: 500;
@@ -1432,7 +1543,7 @@ html, body {
   flex-shrink: 0;
 }
 
-/* Gradient border-bottom effect — gold-to-transparent fade */
+/* Gradient border-bottom — burgundy fade */
 .gotham-command-bar::after {
   content: '';
   position: absolute;
@@ -1443,12 +1554,12 @@ html, body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--gold-dim) 15%,
-    var(--gold-primary) 50%,
-    var(--gold-dim) 85%,
+    var(--de-accent-deep) 15%,
+    var(--de-accent-bright) 50%,
+    var(--de-accent-deep) 85%,
     transparent 100%
   );
-  opacity: 0.4;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -1520,25 +1631,20 @@ html, body {
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   border: 1px solid var(--border-secondary);
-  border-left: 3px solid var(--gold-dim);
-  border-radius: 10px;
-  box-shadow:
-    0 2px 16px rgba(0, 0, 0, 0.35),
-    0 1px 0 rgba(212, 175, 55, 0.04) inset;
+  border-left: 3px solid var(--de-accent);
+  border-radius: var(--de-radius-md);
+  box-shadow: var(--de-shadow-2);
   transition:
-    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s ease;
+    transform 0.3s var(--de-ease-standard),
+    box-shadow 0.3s var(--de-ease-standard),
+    border-color 0.2s ease;
   will-change: transform;
 }
 
 .gotham-card:hover {
   transform: translateY(-2px);
-  border-left-color: var(--gold-primary);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 24px rgba(212, 175, 55, 0.06),
-    0 1px 0 rgba(212, 175, 55, 0.08) inset;
+  border-left-color: var(--de-accent-bright);
+  box-shadow: var(--de-shadow-3), var(--de-glow-red);
 }
 
 .gotham-card:active {
