@@ -655,20 +655,18 @@ export default function Dashboard() {
 
       {/* ── HEADER ── */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 2.5 }} className={`absolute top-3 left-3 md:top-5 md:left-5 z-[200] pointer-events-none flex items-center gap-2 md:gap-3`}>
-        <div className="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center relative">
-          {/* Ambient glow ring — slow rotating */}
-          <div className="absolute inset-[-4px] md:inset-[-5px] rounded-full border border-[var(--de-accent-bright)]/30" style={{ animation: 'osiris-rotate 12s linear infinite' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[var(--de-accent-bright)] shadow-[0_0_6px_var(--de-accent-bright)]" />
-          </div>
-          <div className="absolute inset-[-8px] md:inset-[-10px] rounded-full border border-[var(--de-accent)]/15" style={{ animation: 'osiris-rotate 20s linear infinite reverse' }}>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-0.5 h-0.5 rounded-full bg-[var(--de-accent)]/60" />
-          </div>
-          <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border-2 border-[var(--de-accent-bright)] flex items-center justify-center animate-glow-pulse">
-            <div className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-[var(--de-accent)]/30 border border-[var(--de-accent-bright)]/60" />
-          </div>
-          <div className="absolute w-[1px] h-full bg-[var(--de-accent)]/30" />
-          <div className="absolute w-full h-[1px] bg-[var(--de-accent)]/30" />
-        </div>
+        {/* DIL Logo mark */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/dil-logo-white.png"
+          alt="Digital Intelligence Lab"
+          style={{
+            width: 28, height: 28,
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 0 8px rgba(179,0,27,0.6))',
+          }}
+          className="md:w-9 md:h-9"
+        />
         {/* Horizontal rule extending from logo */}
         <div className="hidden md:block absolute top-1/2 left-[52px] w-[200px] h-[1px] bg-gradient-to-r from-[var(--gold-primary)]/40 via-[var(--gold-primary)]/15 to-transparent" />
         <div className="flex flex-col">
