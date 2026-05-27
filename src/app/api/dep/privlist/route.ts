@@ -5,6 +5,23 @@ import { DepDataset, DepGeoPoint } from '../types';
 
 export const dynamic = 'force-dynamic';
 
+const DEP_CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
+
+interface DepCacheEntry {
+  victims: DepGeoPoint[];
+  total: number;
+  ts: string;
+  te: string;
+  datasets: DepDataset[];
+  expiresAt: number;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __depPrivlistCache: Map<string, DepCacheEntry> | undefined;
+}
+const depCache: Map<string, DepCacheEntry> = (globalThis.__depPrivlistCache ??= new Map());
+
 const VALID_DSETS = new Set<string>(['ext', 'prv', 'nws', 'vnd', 'dds', 'frm']);
 
 function toDateString(d: Date): string {
@@ -37,6 +54,16 @@ export async function GET(req: NextRequest) {
   }
 
   const hideIdentity = process.env.DEP_HIDE_VICTIM_NAME === 'true';
+  const cacheKey = `${[...datasets].sort().join(',')}|${ts}|${te}|${hideIdentity}`;
+
+  const cached = depCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    console.log('[DEP privlist] cache HIT —', cached.total, 'victims, expires in', Math.round((cached.expiresAt - Date.now()) / 60000), 'min');
+    return NextResponse.json(
+      { victims: cached.victims, total: cached.total, ts: cached.ts, te: cached.te, datasets: cached.datasets, cached: true },
+      { headers: { 'Cache-Control': 'public, s-maxage=14400, stale-while-revalidate=3600' } },
+    );
+  }
 
   try {
     const records = await fetchPrivlist(datasets, ts, te);
@@ -86,8 +113,11 @@ export async function GET(req: NextRequest) {
 
     console.log(`[DEP privlist] geocoded: ${victims.length} plotted, ${dropped} dropped (no usable location)`);
 
-    return NextResponse.json({ victims, total: victims.length, ts, te, datasets }, {
-      headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
+    depCache.set(cacheKey, { victims, total: victims.length, ts, te, datasets, expiresAt: Date.now() + DEP_CACHE_TTL });
+    console.log('[DEP privlist] cache SET — expires in 4h');
+
+    return NextResponse.json({ victims, total: victims.length, ts, te, datasets, cached: false }, {
+      headers: { 'Cache-Control': 'public, s-maxage=14400, stale-while-revalidate=3600' },
     });
   } catch (err) {
     console.error('[DEP privlist]', err);
