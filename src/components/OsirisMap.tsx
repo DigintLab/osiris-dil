@@ -4,6 +4,41 @@ import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+/**
+ * Spiral (golden-angle / sunflower) jitter for GeoJSON features.
+ * Points that share the same coordinate are fanned out evenly using the
+ * golden angle (~137.5°), so stacked country-centroid events spread into
+ * a natural phyllotaxis pattern instead of a rectangular blob.
+ * Radius scales with √n so small groups stay compact and large groups
+ * spread proportionally across the territory.
+ */
+function spiralJitter(features: any[]): any[] {
+  const GOLDEN_ANGLE = 2.39996; // radians ≈ 137.508°
+  // Group feature indices by rounded coordinate key
+  const groups: Record<string, number[]> = {};
+  features.forEach((f, i) => {
+    const [lng, lat] = f.geometry.coordinates;
+    const key = `${lng.toFixed(2)}_${lat.toFixed(2)}`;
+    (groups[key] = groups[key] || []).push(i);
+  });
+
+  const out = features.map(f => ({ ...f, geometry: { ...f.geometry, coordinates: [...f.geometry.coordinates] } }));
+
+  Object.values(groups).forEach((indices) => {
+    if (indices.length <= 1) return;
+    const n = indices.length;
+    // Max radius in degrees: grows with √n, capped at ~1.2° (~120 km)
+    const maxR = Math.min(1.2, 0.18 * Math.sqrt(n));
+    indices.forEach((idx, k) => {
+      const r = maxR * Math.sqrt((k + 0.5) / n);
+      const theta = k * GOLDEN_ANGLE;
+      out[idx].geometry.coordinates[0] += r * Math.cos(theta);
+      out[idx].geometry.coordinates[1] += r * Math.sin(theta);
+    });
+  });
+  return out;
+}
+
 interface OsirisMapProps {
   data: any;
   activeLayers: Record<string, boolean>;
@@ -906,11 +941,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
 
   useEffect(() => {
     if (!mapReady) return;
-    setGeo('gdelt', activeLayers.global_incidents && data.gdelt ? data.gdelt.map((e: any) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [e.lng + (Math.random() - 0.5) * 0.6, e.lat + (Math.random() - 0.5) * 0.6] },
-      properties: { name: e.name }
-    })) : []);
+    setGeo('gdelt', activeLayers.global_incidents && data.gdelt
+      ? spiralJitter(data.gdelt.map((e: any) => ({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [e.lng, e.lat] },
+          properties: { name: e.name },
+        })))
+      : []);
   }, [mapReady, data.gdelt, activeLayers.global_incidents, setGeo]);
 
   useEffect(() => {
@@ -958,10 +995,10 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
   useEffect(() => {
     if (!mapReady) return;
     setGeo('dep-threats', activeLayers.dep_threats && data.dep_threats
-      ? data.dep_threats.map((v: any) => ({
+      ? spiralJitter(data.dep_threats.map((v: any) => ({
           type: 'Feature', geometry: { type: 'Point', coordinates: [v.lng, v.lat] },
           properties: { victim: v.victim, sector: v.sector, actor: v.actor, date: v.date, site: v.site, dset: v.dset, victimCC: v.victimCC, victimCity: v.victimCity, victimState: v.victimState, geocodeTier: v.geocodeTier },
-        }))
+        })))
       : []);
   }, [mapReady, data.dep_threats, activeLayers.dep_threats, setGeo]);
 
