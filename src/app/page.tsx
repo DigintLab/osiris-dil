@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, BarChart3, Newspaper, Search, Share2, Map as MapIcon, X, Globe, MapPinned, Radar, Satellite, Moon, ExternalLink, AlertTriangle, Building2, RadioTower, Activity, Shield, Database, Wifi } from 'lucide-react';
+import { Layers, BarChart3, Newspaper, Search, Share2, Map as MapIcon, X, Globe, MapPinned, Satellite, Moon, ExternalLink, AlertTriangle, Building2, RadioTower, Activity, Shield, Database, Wifi } from 'lucide-react';
 import IntelFeed from '@/components/IntelFeed';
 import MarketsPanel from '@/components/MarketsPanel';
 import SearchBar from '@/components/SearchBar';
@@ -18,7 +18,6 @@ import LiveAlerts from '@/components/LiveAlerts';
 const OsirisMap = dynamic(() => import('@/components/OsirisMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
 const CameraViewer = dynamic(() => import('@/components/CameraViewer'));
-const OsintPanel = dynamic(() => import('@/components/OsintPanel'));
 const DepPanel = dynamic(() => import('@/components/DepPanel'));
 
 function useIsMobile() {
@@ -112,7 +111,7 @@ export default function Dashboard() {
   const [showMarkets, setShowMarkets] = useState(true);
   const [showIntel, setShowIntel] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState<'layers'|'markets'|'intel'|'search'|'recon'|null>(null);
+  const [mobilePanel, setMobilePanel] = useState<'layers'|'markets'|'intel'|'search'|null>(null);
   const [mapProjection, setMapProjection] = useState<'globe'|'mercator'>('globe');
   const [mapStyle, setMapStyle] = useState<'dark'|'satellite'>('dark');
   const [sweepData, setSweepData] = useState<any>(null);
@@ -446,71 +445,30 @@ export default function Dashboard() {
 
 
 
-            {/* ── Geometric tactical logo ── */}
-            <div className="relative w-40 h-40 mb-8 flex items-center justify-center z-[2]">
-              {/* Outer ring — slow clockwise */}
+            {/* ── DIL Logo ── */}
+            <motion.div
+              className="relative mb-8 flex items-center justify-center z-[2]"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+            >
+              {/* Glow halo behind logo */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.6, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: 360 }}
-                transition={{ opacity: { duration: 0.6 }, scale: { duration: 0.8, ease: 'easeOut' }, rotate: { duration: 20, repeat: Infinity, ease: 'linear' } }}
-                className="absolute inset-0 rounded-full"
-                style={{ border: '1px solid rgba(212,175,55,0.2)' }}
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{ background: 'var(--gold-primary)', boxShadow: '0 0 12px var(--gold-primary), 0 0 24px rgba(212,175,55,0.3)' }} />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1 h-1 rounded-full" style={{ background: 'rgba(212,175,55,0.5)', boxShadow: '0 0 6px rgba(212,175,55,0.3)' }} />
-              </motion.div>
-
-              {/* Middle ring — faster counter-clockwise */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.4, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: -360 }}
-                transition={{ opacity: { duration: 0.6, delay: 0.15 }, scale: { duration: 0.8, delay: 0.15, ease: 'easeOut' }, rotate: { duration: 12, repeat: Infinity, ease: 'linear' } }}
-                className="absolute rounded-full"
-                style={{ inset: '18px', border: '1px solid rgba(0,229,255,0.15)' }}
-              >
-                <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--cyan-primary)', boxShadow: '0 0 10px var(--cyan-primary), 0 0 20px rgba(0,229,255,0.2)' }} />
-                <div className="absolute bottom-0 left-1/4 translate-y-1/2 w-1 h-1 rounded-full" style={{ background: 'rgba(0,229,255,0.4)' }} />
-              </motion.div>
-
-              {/* Inner ring — fastest clockwise */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.2, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: 360 }}
-                transition={{ opacity: { duration: 0.6, delay: 0.3 }, scale: { duration: 0.8, delay: 0.3, ease: 'easeOut' }, rotate: { duration: 7, repeat: Infinity, ease: 'linear' } }}
-                className="absolute rounded-full"
-                style={{ inset: '40px', border: '1px solid rgba(212,175,55,0.25)' }}
-              >
-                <div className="absolute top-0 left-1/4 -translate-y-1/2 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--gold-primary)', boxShadow: '0 0 8px var(--gold-primary)' }} />
-              </motion.div>
-
-              {/* Core circle + crosshair */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-                className="relative w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ border: '2px solid var(--gold-primary)', boxShadow: '0 0 20px rgba(212,175,55,0.15), inset 0 0 20px rgba(212,175,55,0.05)' }}
-              >
-                <motion.div
-                  animate={{ opacity: [0.3, 0.8, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-5 h-5 rounded-full"
-                  style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(212,175,55,0.05) 70%)' }}
-                />
-                {/* Crosshair lines */}
-                <div className="absolute w-[1px] h-full" style={{ background: 'linear-gradient(to bottom, transparent, rgba(212,175,55,0.3), transparent)' }} />
-                <div className="absolute w-full h-[1px]" style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.3), transparent)' }} />
-              </motion.div>
-
-              {/* Faint pulsing radar sweep */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.15, 0], rotate: [0, 360] }}
-                transition={{ opacity: { duration: 3, repeat: Infinity }, rotate: { duration: 3, repeat: Infinity, ease: 'linear' }, delay: 0.6 }}
-                className="absolute inset-[10px] rounded-full"
-                style={{ background: 'conic-gradient(from 0deg, transparent 0deg, rgba(212,175,55,0.15) 40deg, transparent 80deg)' }}
+                animate={{ opacity: [0.2, 0.45, 0.2] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-[-20px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at center, rgba(179,0,27,0.25) 0%, transparent 70%)' }}
               />
-            </div>
+              {/* Logo image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/dil-logo-white.png"
+                alt="Digital Intelligence Lab"
+                width={120}
+                height={120}
+                style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 0 24px rgba(179,0,27,0.5))' }}
+              />
+            </motion.div>
 
             {/* ── Product title ── */}
             <div className="flex flex-col items-center gap-1 mb-3 z-[2]">
@@ -716,10 +674,6 @@ export default function Dashboard() {
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <h1 className="text-base md:text-lg font-bold tracking-[0.25em] text-[var(--text-heading)]" style={{ fontFamily: 'var(--font-display)' }}>DIL Observatory</h1>
-            <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-[1px] rounded-sm border border-[var(--de-accent-bright)]/40 bg-[var(--de-accent)]/15 text-[7px] font-mono font-bold tracking-[0.15em] text-[var(--de-fg-2)] uppercase" style={{ lineHeight: '1.4' }}>
-              <Globe className="w-2.5 h-2.5" />
-              OPEN SOURCE
-            </span>
           </div>
           <span className="text-[8px] md:text-[9px] text-[var(--de-fg-3)] font-mono tracking-[0.2em] md:tracking-[0.25em] opacity-90">DIGITAL INTELLIGENCE LAB</span>
         </div>
@@ -747,19 +701,11 @@ export default function Dashboard() {
         </span>
 
         <UptimeClock />
-        
-        <a href='https://ko-fi.com/M8D41ZYW4Z' target='_blank' className="pointer-events-auto hover:opacity-80 transition-opacity ml-1 flex items-center">
-          <span className="px-3 py-1 rounded-sm border border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] text-[11px] font-bold tracking-[0.2em]">SUPPORT PROJECT</span>
-        </a>
       </motion.div>
 
       {/* ── MOBILE: Compact top status ── */}
       {isMobile && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }} className="absolute top-3 right-3 z-[200] pointer-events-auto flex items-center gap-2">
-          <a href='https://ko-fi.com/M8D41ZYW4Z' target='_blank' className="glass-panel px-2 py-1 flex items-center gap-1.5 text-[7px] font-mono tracking-widest hover:opacity-80 transition-opacity border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10">
-            <div className="w-1 h-1 rounded-full bg-[var(--gold-primary)] animate-osiris-pulse" />
-            <span className="text-[var(--gold-primary)] font-bold">SUPPORT PROJECT</span>
-          </a>
         </motion.div>
       )}
 
@@ -786,19 +732,12 @@ export default function Dashboard() {
         {showIntel && <IntelFeed data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} />}
       </div>
 
-      {/* ── RIGHT HUD (desktop): Search + RECON + Live Alerts ── */}
+      {/* ── RIGHT HUD (desktop): Search + Live Alerts ── */}
       <div className="desktop-panel absolute right-5 top-20 bottom-24 w-80 flex flex-col gap-3 z-[200] pointer-events-auto overflow-y-auto styled-scrollbar pr-1">
         <div className="flex gap-2 items-start">
           <div className="flex-1"><SearchBar onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} /></div>
           <div className="relative"><SharePanel mapView={mapView} activeLayers={activeLayers} mouseCoords={null} /></div>
         </div>
-        <OsintPanel onSweepVisualize={setSweepData} onScanGeolocate={(target, data) => {
-          setScanTargets(prev => {
-            const existing = prev.filter(t => t.id !== target);
-            return [{ id: target, timestamp: Date.now(), ...data }, ...existing].slice(0, 10);
-          });
-          setFlyToLocation({ lat: data.lat, lng: data.lng, ts: Date.now() });
-        }} />
         {process.env.NEXT_PUBLIC_DEP_SEARCH === 'true' && <DepPanel />}
         <LiveAlerts data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} onWatchFeed={(url, name) => { setLiveFeedUrl(url); setLiveFeedName(name); }} />
       </div>
@@ -914,13 +853,12 @@ export default function Dashboard() {
                 { id: 'layers' as const, icon: Layers, label: 'LAYERS' },
                 { id: 'markets' as const, icon: BarChart3, label: 'MARKETS' },
                 { id: 'intel' as const, icon: Newspaper, label: 'INTEL' },
-                { id: 'recon' as const, icon: Radar, label: 'RECON' },
                 { id: 'search' as const, icon: Search, label: 'SEARCH' },
               ].map(tab => (
                 <button key={tab.id} onClick={() => setMobilePanel(mobilePanel === tab.id ? null : tab.id)}
                   className={`mobile-nav-btn ${mobilePanel === tab.id ? 'active' : ''}`}>
-                  <tab.icon className={`w-4 h-4 ${tab.id === 'recon' ? 'text-[var(--cyan-primary)]' : ''}`} />
-                  <span className={tab.id === 'recon' ? 'text-[var(--cyan-primary)]' : ''}>{tab.label}</span>
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -966,11 +904,6 @@ export default function Dashboard() {
                     <div className="space-y-2">
                       <SearchBar onLocate={(lat, lng) => { setFlyToLocation({ lat, lng, ts: Date.now() }); setMobilePanel(null); }} />
                       <SharePanel mapView={mapView} activeLayers={activeLayers} mouseCoords={null} />
-                    </div>
-                  )}
-                  {mobilePanel === 'recon' && (
-                    <div className="space-y-2">
-                      <OsintPanel isOpen={true} onClose={() => setMobilePanel(null)} isMobile={true} onSweepVisualize={setSweepData} />
                     </div>
                   )}
                 </div>
