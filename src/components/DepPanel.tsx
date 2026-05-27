@@ -5,12 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Search, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from 'lucide-react';
 
 const DSET_COLORS: Record<string, string> = {
-  ext: '#FF3D3D', prv: '#FF9500', dds: '#FFD700',
-  nws: '#00E5FF', vnd: '#E040FB', frm: '#00E676',
+  ext: '#b3001b', // crimson      — data extortion
+  prv: '#d4533a', // terra cotta  — regulatory
+  dds: '#ffb700', // amber        — ddos
+  nws: '#9c9c69', // mustard      — major breach
+  vnd: '#4a5e6a', // slate        — vandalism
+  frm: '#6b8e8e', // teal         — underground
 };
 const DSET_LABELS: Record<string, string> = {
-  ext: 'RANSOMWARE', prv: 'PRIVACY', dds: 'DDOS',
-  nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND',
+  ext: 'DATA EXTORTION', prv: 'REGULATORY', dds: 'DDOS',
+  nws: 'MAJOR BREACH',   vnd: 'VANDALISM',  frm: 'UNDERGROUND',
 };
 
 export default function DepPanel() {

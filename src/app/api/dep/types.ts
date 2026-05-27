@@ -1,17 +1,17 @@
 export type DepDataset = 'ext' | 'prv' | 'nws' | 'vnd' | 'dds' | 'frm';
 
 export const DATASET_COLORS: Record<DepDataset, string> = {
-  ext: '#FF3D3D',
-  prv: '#FF9500',
-  dds: '#FFD700',
-  nws: '#00E5FF',
-  vnd: '#E040FB',
-  frm: '#00E676',
+  ext: '#b3001b', // DE crimson      — data extortion (highest severity)
+  prv: '#d4533a', // DE terra cotta  — regulatory exposure
+  dds: '#ffb700', // DE warn amber   — ddos / availability attack
+  nws: '#9c9c69', // DE mustard      — major breach (intelligence signal)
+  vnd: '#4a5e6a', // DE slate        — vandalism / hacktivist
+  frm: '#6b8e8e', // DE teal         — underground / dark web intel
 };
 
 export const DATASET_LABELS: Record<DepDataset, string> = {
-  ext: 'RANSOMWARE',
-  prv: 'PRIVACY',
+  ext: 'DATA EXTORTION',
+  prv: 'REGULATORY',
   dds: 'DDOS',
   nws: 'MAJOR BREACH',
   vnd: 'VANDALISM',

@@ -463,22 +463,22 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       // DEP Breach Events — glow + dot + label, colored by dataset type
       map.addLayer({ id: 'dep-glow', type: 'circle', source: 'dep-threats', paint: {
         'circle-radius': ['interpolate',['linear'],['zoom'], 1,10, 5,18, 10,28],
-        'circle-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'circle-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
         'circle-opacity': 0.12, 'circle-blur': 1,
       }});
       map.addLayer({ id: 'dep-dots', type: 'circle', source: 'dep-threats', paint: {
         'circle-radius': ['interpolate',['linear'],['zoom'], 1,4, 5,7, 10,11],
-        'circle-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'circle-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
         'circle-opacity': 0.9,
         'circle-stroke-width': 1.5,
-        'circle-stroke-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'circle-stroke-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
         'circle-stroke-opacity': 0.5,
       }});
       map.addLayer({ id: 'dep-label', type: 'symbol', source: 'dep-threats', minzoom: 6, layout: {
         'text-field': ['get','victim'], 'text-size': 9, 'text-font': ['Open Sans Regular'],
         'text-offset': [0, 1.8], 'text-max-width': 14, 'text-allow-overlap': false,
       }, paint: {
-        'text-color': ['match',['get','dset'],'ext','#FF3D3D','prv','#FF9500','dds','#FFD700','nws','#9c9c69','vnd','#E040FB','frm','#00E676','#FF3D3D'],
+        'text-color': ['match',['get','dset'],'ext','#b3001b','prv','#d4533a','dds','#ffb700','nws','#9c9c69','vnd','#4a5e6a','frm','#6b8e8e','#b3001b'],
         'text-halo-color': '#000', 'text-halo-width': 1.5, 'text-opacity': 0.8,
       }});
 
@@ -759,8 +759,8 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       if (!e.features?.length) return;
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
-      const dsetColors: Record<string, string> = { ext: '#FF3D3D', prv: '#FF9500', dds: '#FFD700', nws: '#9c9c69', vnd: '#E040FB', frm: '#00E676' };
-      const dsetLabels: Record<string, string> = { ext: 'RANSOMWARE', prv: 'PRIVACY BREACH', dds: 'DDOS', nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND' };
+      const dsetColors: Record<string, string> = { ext: '#b3001b', prv: '#d4533a', dds: '#ffb700', nws: '#9c9c69', vnd: '#4a5e6a', frm: '#6b8e8e' };
+      const dsetLabels: Record<string, string> = { ext: 'DATA EXTORTION', prv: 'REGULATORY', dds: 'DDOS', nws: 'MAJOR BREACH', vnd: 'VANDALISM', frm: 'UNDERGROUND' };
       const color = dsetColors[p.dset] || '#FF3D3D';
       const label = dsetLabels[p.dset] || 'BREACH EVENT';
       const location = [p.victimCity, p.victimState, p.victimCC].filter(Boolean).join(', ') || '—';
