@@ -644,7 +644,7 @@ export default function Dashboard() {
         </button>
       </motion.div>
 
-      {/* ── BASED ON OSIRIS ATTRIBUTION ── */}
+      {/* ── ATTRIBUTION + LICENSE ── */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4 }}
         className="absolute bottom-[75px] md:bottom-[22px] right-[320px] md:right-[340px] z-[200] pointer-events-none hidden md:flex items-center gap-1.5"
@@ -663,6 +663,26 @@ export default function Dashboard() {
         </span>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
         <span className="text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)' }}>Digital Intelligence Lab</span>
+        <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
+        <a
+          href="https://opensource.org/license/mit"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em] uppercase"
+          style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+        >
+          Dashboard: MIT
+        </a>
+        <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
+        <a
+          href="https://creativecommons.org/licenses/by-nd/4.0/deed.en"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em] uppercase"
+          style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+        >
+          Data: CC BY-ND
+        </a>
       </motion.div>
 
       {/* ── HEADER ── */}
