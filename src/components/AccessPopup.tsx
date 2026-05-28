@@ -40,7 +40,7 @@ export default function AccessPopup() {
                 DIL Observatory
               </p>
               <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-heading)', letterSpacing: '0.04em', margin: 0 }}>
-                Want full access to the data?
+                Need full access to the data?
               </h2>
             </div>
             <button
@@ -63,7 +63,7 @@ export default function AccessPopup() {
 
           <p style={{ fontSize: 11, color: 'var(--de-fg-2)', lineHeight: 1.6, marginBottom: 14 }}>
             The community dashboard gives you a live view of the digital landscape.
-            Get in touch to unlock the full platform — deeper data, extended history, custom feeds, and more.
+            Get in touch to unlock the full platform to support your decision making with deeper data, extended history, custom feeds, virtual analysts, and more.
           </p>
 
           {/* Monday.com embed */}
