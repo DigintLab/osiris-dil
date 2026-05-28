@@ -14,6 +14,7 @@ import ViewPresets from '@/components/ViewPresets';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import GlobalStatusBar from '@/components/GlobalStatusBar';
 import VulnFeed from '@/components/VulnFeed';
+import AccessPopup from '@/components/AccessPopup';
 
 const OsirisMap = dynamic(() => import('@/components/OsirisMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
@@ -662,7 +663,7 @@ export default function Dashboard() {
           </a>
         </span>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
-        <span className="text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)' }}>Digital Intelligence Lab</span>
+        <a href="https://digintlab.com" target="_blank" rel="noopener noreferrer" className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>Digital Intelligence Lab</a>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
         <a
           href="https://opensource.org/license/mit"
@@ -687,26 +688,28 @@ export default function Dashboard() {
 
       {/* ── HEADER ── */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 2.5 }} className={`absolute top-3 left-3 md:top-5 md:left-5 z-[200] pointer-events-none flex items-center gap-2 md:gap-3`}>
-        {/* DIL Logo mark */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/dil-logo-white.png"
-          alt="Digital Intelligence Lab"
-          style={{
-            width: 28, height: 28,
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 0 8px rgba(179,0,27,0.6))',
-          }}
-          className="md:w-9 md:h-9"
-        />
-        {/* Horizontal rule extending from logo */}
-        <div className="hidden md:block absolute top-1/2 left-[52px] w-[200px] h-[1px] bg-gradient-to-r from-[var(--gold-primary)]/40 via-[var(--gold-primary)]/15 to-transparent" />
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base md:text-lg font-bold tracking-[0.25em] text-[var(--text-heading)]" style={{ fontFamily: 'var(--font-display)' }}>DIL Observatory</h1>
+        <a href="https://digintlab.com" target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center gap-2 md:gap-3 group">
+          {/* DIL Logo mark */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/dil-logo-white.png"
+            alt="Digital Intelligence Lab"
+            style={{
+              width: 28, height: 28,
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 0 8px rgba(179,0,27,0.6))',
+            }}
+            className="md:w-9 md:h-9"
+          />
+          {/* Horizontal rule extending from logo */}
+          <div className="hidden md:block absolute top-1/2 left-[52px] w-[200px] h-[1px] bg-gradient-to-r from-[var(--gold-primary)]/40 via-[var(--gold-primary)]/15 to-transparent" />
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h1 className="text-base md:text-lg font-bold tracking-[0.25em] text-[var(--text-heading)] group-hover:text-[var(--gold-primary)] transition-colors" style={{ fontFamily: 'var(--font-display)' }}>DIL Observatory</h1>
+            </div>
+            <span className="text-[8px] md:text-[9px] text-[var(--de-fg-3)] font-mono tracking-[0.2em] md:tracking-[0.25em] opacity-90">DIGITAL INTELLIGENCE LAB</span>
           </div>
-          <span className="text-[8px] md:text-[9px] text-[var(--de-fg-3)] font-mono tracking-[0.2em] md:tracking-[0.25em] opacity-90">DIGITAL INTELLIGENCE LAB</span>
-        </div>
+        </a>
       </motion.div>
 
       {/* ── TOP-RIGHT STATUS (desktop) — C2 DISPLAY ── */}
@@ -1071,6 +1074,8 @@ export default function Dashboard() {
         [?] SHORTCUTS · [F] FULLSCREEN · [S] SHARE · [R] RESET VIEW
       </div>
 
+      {/* Access popup — appears after 60 s */}
+      <AccessPopup />
 
     </main>
   );
