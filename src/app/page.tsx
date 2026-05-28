@@ -14,6 +14,7 @@ import ViewPresets from '@/components/ViewPresets';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import GlobalStatusBar from '@/components/GlobalStatusBar';
 import VulnFeed from '@/components/VulnFeed';
+import AccessPopup from '@/components/AccessPopup';
 
 const OsirisMap = dynamic(() => import('@/components/OsirisMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
@@ -1073,6 +1074,8 @@ export default function Dashboard() {
         [?] SHORTCUTS · [F] FULLSCREEN · [S] SHARE · [R] RESET VIEW
       </div>
 
+      {/* Access popup — appears after 60 s */}
+      <AccessPopup />
 
     </main>
   );
