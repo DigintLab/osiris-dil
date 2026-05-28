@@ -662,7 +662,7 @@ export default function Dashboard() {
           </a>
         </span>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
-        <a href="https://digintlab.com" target="_blank" rel="noopener noreferrer" className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)' }}>Digital Intelligence Lab</a>
+        <a href="https://digintlab.com" target="_blank" rel="noopener noreferrer" className="pointer-events-auto hover:text-[var(--de-fg-2)] transition-colors text-[8px] font-mono tracking-[0.12em]" style={{ color: 'var(--de-fg-3)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>Digital Intelligence Lab</a>
         <span style={{ color: 'var(--de-divider)', fontSize: '8px' }}>·</span>
         <a
           href="https://opensource.org/license/mit"
