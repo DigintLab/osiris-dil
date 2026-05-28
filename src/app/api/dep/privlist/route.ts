@@ -39,8 +39,8 @@ export async function GET(req: NextRequest) {
   const depMaxDays = Math.max(1, parseInt(process.env.DEP_MAX_DAYS || '14', 10) || 14);
   defaultStart.setDate(today.getDate() - depMaxDays);
 
-  const te = searchParams.get('te') || toDateString(today);
-  const ts = searchParams.get('ts') || toDateString(defaultStart);
+  const te = toDateString(today);
+  const ts = toDateString(defaultStart);
   const enabledDsets = new Set(
     (process.env.DEP_DEFAULT_DATASETS || 'ext,prv,dds').split(',').map((d: string) => d.trim()).filter(Boolean)
   );
