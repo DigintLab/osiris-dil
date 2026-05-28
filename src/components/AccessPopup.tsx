@@ -16,15 +16,15 @@ export default function AccessPopup() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, x: -40, y: 20 }}
+          initial={{ opacity: 0, x: 40, y: 20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
-          exit={{ opacity: 0, x: -40, y: 20 }}
+          exit={{ opacity: 0, x: 40, y: 20 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
           className="glass-panel pointer-events-auto"
           style={{
             position: 'absolute',
             bottom: 90,
-            left: 20,
+            right: 20,
             zIndex: 300,
             width: 480,
             maxWidth: 'calc(100vw - 40px)',
