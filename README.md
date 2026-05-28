@@ -1,18 +1,18 @@
 <div align="center">
 
-# ⬡ OSIRIS
+# DIL Observatory
 
-### Open Source Intelligence & Reconnaissance Integrated System
+### Digital Intelligence Lab — Community Dashboard
 
-[![Live Demo](https://img.shields.io/badge/osirisai.live-00E5FF?style=for-the-badge&logo=vercel&logoColor=white)](https://osirislive.app)
+[![Live Dashboard](https://img.shields.io/badge/community.digintlab.com-00E5FF?style=for-the-badge&logo=vercel&logoColor=white)](https://community.digintlab.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![MapLibre](https://img.shields.io/badge/MapLibre_GL-GPU_Rendered-396CB2?style=for-the-badge)](https://maplibre.org)
 [![License](https://img.shields.io/badge/License-MIT-D4AF37?style=for-the-badge)](LICENSE)
 
-**A real-time global intelligence dashboard that aggregates live flight tracking, CCTV networks, earthquake monitoring, conflict zone mapping, and 24/7 news feeds into a single GPU-accelerated interface.**
+**A free community dashboard for monitoring and making sense of the evolving digital realm — built on the open-source [OSIRIS](https://github.com/simplifaisoul/osiris) intelligence platform.**
 
-[Live Demo](https://osirisai.live) · [Report Bug](https://github.com/simplifaisoul/osiris/issues) · [Request Feature](https://github.com/simplifaisoul/osiris/issues) · [Join Discord](https://discord.gg/umBykEpb98)
+[Open Dashboard](https://community.digintlab.com/) · [Report Bug](https://github.com/digintlab/osiris-dil/issues) · [Request Feature](https://github.com/digintlab/osiris-dil/issues)
 
 </div>
 
@@ -20,35 +20,49 @@
 
 ## Overview
 
-Osiris is a production-grade OSINT platform that provides situational awareness across multiple intelligence domains. Built with Next.js 16 and MapLibre GL, every data point is rendered via WebGL for 60fps performance even with thousands of concurrent entities on-screen.
+The DIL Observatory is a shared space for observing the state of the digital world in real time: from cyber incidents and underground signals to geopolitical and regulatory shifts affecting the digital ecosystem.
 
-### Key Capabilities
+The dashboard gives users a live, map-based view of recent activity across the digital landscape. It brings together signals from multiple domains, helping analysts, researchers, journalists, students, and curious observers understand where digital events are happening, what types of activity are emerging, and which sectors may be affected.
 
-| Domain | Data Points | Sources |
-|--------|------------|---------|
-| **Aviation** | Commercial, Private, Military, Jets | OpenSky Network |
-| **Maritime** | 39 Global Ports, 10 Chokepoints | Static Naval Intel |
-| **CCTV** | 2,000+ Cameras | TfL, WSDOT, Caltrans, NYC DOT, VicRoads + more |
-| **Seismic** | Real-time M2.5+ | USGS Earthquake API |
-| **Fires** | Active Hotspots | NASA FIRMS |
-| **News** | 24/7 Live Streams | 25+ Global Broadcasters |
-| **Weather** | Severe Events | NASA EONET |
-| **Space** | Solar Weather, Satellites | NOAA SWPC, N2YO |
-| **Cyber** | CVE Threats, Vulnerability Scanning | NVD, Custom Scanner |
-| **Conflict** | 13 Active Zones | Static OSINT Intel |
+### What you can explore
+
+| Domain | Examples |
+|--------|----------|
+| **Cyber Incidents** | Data breaches, extortion, vandalism |
+| **Underground Activity** | Threat actor signals, dark web indicators |
+| **Threat Infrastructure** | C2 networks, malicious hosting, botnets |
+| **Vulnerability Intelligence** | CVE updates, exploit activity, patch advisories |
+| **Regulatory & Geopolitical** | Policy shifts, sanctions, digital governance events |
+| **Broader Digital Risk** | Market signals, sector exposure, emerging threats |
+
+---
+
+## Interface
+
+The Observatory is built around a **global interactive map** enriched with:
+
+- **Event layers** — toggleable data streams across incident types and domains
+- **Regional presets** — quick-focus views for major geographies
+- **Intelligence feeds** — live and near-real-time signal aggregation
+- **Vulnerability updates** — CVE and threat intelligence overlays
+- **Market & contextual indicators** — sector and economic context
+
+Each event can be inspected directly, with details such as actor, date, sector, location, and geocoding level where available.
 
 ---
 
 ## Architecture
 
+Built on the OSIRIS open-source platform with a GPU-accelerated map engine:
+
 ```
 ┌─────────────────────────────────────────────────┐
-│                  OSIRIS CLIENT                   │
+│             DIL OBSERVATORY CLIENT               │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────┐ │
-│  │ MapLibre  │  │  HUD     │  │  RECON Toolkit│ │
-│  │  GL (GPU) │  │ Panels   │  │  Port Scan    │ │
-│  │  WebGL    │  │ Layers   │  │  DNS / WHOIS  │ │
-│  │  Render   │  │ Controls │  │  Vuln Scanner │ │
+│  │ MapLibre  │  │  Event   │  │  Intelligence │ │
+│  │  GL (GPU) │  │  Layers  │  │  Feeds        │ │
+│  │  WebGL    │  │  Panels  │  │  Vuln Scanner │ │
+│  │  Render   │  │ Controls │  │  CVE Lookup   │ │
 │  └──────────┘  └──────────┘  └───────────────┘ │
 ├─────────────────────────────────────────────────┤
 │               NEXT.JS API ROUTES                 │
@@ -65,15 +79,7 @@ Osiris is a production-grade OSINT platform that provides situational awareness 
 
 ---
 
-## Features
-
-### Intelligence Layers
-- **20 toggleable data layers** with real-time entity counts
-- **GPU-accelerated rendering** — all map data rendered via WebGL, not DOM
-- **Progressive loading** — data fetched on-demand when layers are activated
-- **Viewport-aware** — only loads relevant data for the visible region
-
-#### Layer reference
+## Layer Reference
 
 | Key | Group | Label | Default | Data source |
 |-----|-------|-------|---------|-------------|
@@ -98,53 +104,25 @@ Osiris is a production-grade OSINT platform that provides situational awareness 
 | `radiation` | — | Radiation Monitoring | off | Static OSINT intel |
 | `war_alerts` | — | War / Conflict Alerts | off | Static OSINT intel |
 
-The last four rows have no panel toggle — they are enabled via `NEXT_PUBLIC_DEFAULT_LAYERS` or the `?layers=` URL parameter.
+#### Customising layers
 
-#### Customising which layers are available
-
-Two build-time env vars control layer visibility and defaults (set before `npm run build` or in Vercel → Settings → Environment Variables):
+Two build-time env vars control layer visibility and defaults:
 
 ```env
 # Show only these layers in the panel (comma-separated keys). Omit to show all.
 NEXT_PUBLIC_ENABLED_LAYERS=maritime,earthquakes,global_incidents,dep_threats,day_night
 
 # Layers that are ON at startup. Omit to use the built-in defaults above.
-# The ?layers= URL param always takes precedence at runtime.
 NEXT_PUBLIC_DEFAULT_LAYERS=global_incidents,dep_threats,day_night
 ```
-
-### RECON Toolkit
-- **Port Scanner** — TCP connect scan with service fingerprinting
-- **DNS Lookup** — Full record resolution (A, AAAA, MX, NS, TXT, CNAME)
-- **WHOIS** — Domain/IP registration data
-- **SSL/TLS Inspector** — Certificate chain analysis
-- **IP Intelligence** — Geolocation, ASN, and threat reputation
-- **Vulnerability Scanner** — CVE lookup against NVD database
-
-### Live Broadcast Network
-- **25+ live 24/7 news streams** from global broadcasters
-- Click any news dot on the map to open the live stream
-- Feeds from NBC, CBS, ABC, Sky News, Al Jazeera, France 24, NHK, WION, and more
-
-### Conflict Zone Monitoring
-- **13 active conflict/tension zones** with severity-coded warning markers
-- Active Wars: Ukraine, Gaza, Sudan, Myanmar, DRC, Yemen
-- High Tension: Syria, Lebanon, Sahel, Somalia, Red Sea
-- Elevated: Taiwan Strait, Korean DMZ
-
-### Performance Optimized
-- **75% reduction in edge requests** vs initial release
-- Aggressive polling relaxation (15-30 min intervals for stable data)
-- Static data served from memory (zero external API calls for news feeds)
-- `layerFetchedRef` prevents duplicate API requests
 
 ---
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/simplifaisoul/osiris.git
-cd osiris
+git clone https://github.com/digintlab/osiris-dil.git
+cd osiris-dil
 npm install
 npm run dev
 ```
@@ -154,8 +132,8 @@ Open [http://localhost:3000](http://localhost:3000)
 ### Docker / Self-Hosting
 
 ```bash
-git clone https://github.com/simplifaisoul/osiris.git
-cd osiris
+git clone https://github.com/digintlab/osiris-dil.git
+cd osiris-dil
 cp .env.template .env     # optional — configure keys / port
 docker compose up -d
 ```
@@ -169,17 +147,16 @@ CasaOS and API-key guide.
 **Prebuilt image (GHCR)** — skip the build and pull it directly:
 
 ```bash
-docker pull ghcr.io/aiacos/osiris:latest
-docker run -d -p 3000:3000 --env-file .env ghcr.io/aiacos/osiris:latest
+docker pull ghcr.io/digintlab/osiris-dil:latest
+docker run -d -p 3000:3000 --env-file .env ghcr.io/digintlab/osiris-dil:latest
 ```
 
-**Custom port** — the container always listens on `3000`; set `OSIRIS_PORT` in
-`.env` to change the published host port (e.g. `OSIRIS_PORT=3005`) without
-editing the compose file.
+**Custom port** — set `OSIRIS_PORT` in `.env` to change the published host port
+(e.g. `OSIRIS_PORT=3005`) without editing the compose file.
 
 ### Environment Variables
 
-OSIRIS works **partially without any API keys** — all core feeds use public,
+The dashboard works **partially without any API keys** — all core feeds use public,
 keyless sources. Copy [`.env.template`](.env.template) to `.env` and set only
 what you need:
 
@@ -187,7 +164,7 @@ what you need:
 # Published host port (container always listens on 3000). Default: 3000
 OSIRIS_PORT=3000
 
-# RECON scanner backend (the only vars the current code reads).
+# RECON scanner backend
 # SCANNER_KEY must match the backend's OSIRIS_KEY — generate with: openssl rand -hex 32
 SCANNER_URL=
 SCANNER_KEY=
@@ -197,7 +174,7 @@ FIRMS_API_KEY=                # NASA FIRMS  — firms.modaps.eosdis.nasa.gov/api
 OPENSKY_CLIENT_ID=            # OpenSky OAuth2 (since Mar 2025) — opensky-network.org
 OPENSKY_CLIENT_SECRET=
 N2YO_API_KEY=                 # N2YO satellites — n2yo.com (Profile → API key)
-AIS_API_KEY=                 # aisstream.io maritime
+AIS_API_KEY=                  # aisstream.io maritime
 ```
 
 > Without `SCANNER_URL`/`SCANNER_KEY` the RECON toolkit returns `503`; every
@@ -239,18 +216,10 @@ MIT — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**🛠️ SUPPORT THE OSIRIS PROJECT**
-The OSIRIS Global Intelligence Grid is entirely open-source, but running the backend scanners and data firehoses isn't cheap.
+**DIL Observatory** is a free community resource by [DigIntLab](https://digintlab.com).
 
-If you want to help keep the servers alive, and support us to get access to better tools  unlock the **Special OSIRIS Console**, Currently Just a Cool UI. a you can officially support the project here : 
+Built on [OSIRIS](https://github.com/simplifaisoul/osiris) — the open-source intelligence and reconnaissance platform.
 
-🔗 [Support OSIRIS on Patreon](https://www.patreon.com/posts/159077425)
-
-*Supporters receive the `🔴 RedTeam Console` role and access to encrypted developer comms.*
-
-
-**Built by [simplifaisoul](https://github.com/simplifaisoul)**
-
-[Join our Discord to be a part of this movement!](https://discord.gg/umBykEpb98)
+*The goal is simple: make digital intelligence more accessible, visible, and understandable.*
 
 </div>
