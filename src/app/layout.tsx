@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    template: "%s | OSIRIS Intelligence",
+    template: "%s | DIL Observatory",
   },
   description: SITE_DESCRIPTION,
   keywords: [
@@ -172,6 +172,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="icon" type="image/svg+xml" href="/favicon-dil.svg" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -186,7 +187,7 @@ export default function RootLayout({
 
       </head>
       <body className="antialiased">
-        <ErrorBoundary name="OSIRIS Core">
+        <ErrorBoundary name="DIL Observatory Core">
           {children}
         </ErrorBoundary>
       </body>
