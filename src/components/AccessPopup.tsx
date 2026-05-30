@@ -12,6 +12,8 @@ export default function AccessPopup() {
     return () => clearTimeout(timer);
   }, []);
 
+  const close = () => setVisible(false);
+
   return (
     <AnimatePresence>
       {visible && (
@@ -22,12 +24,14 @@ export default function AccessPopup() {
           transition={{ duration: 0.45, ease: 'easeOut' }}
           className="glass-panel pointer-events-auto"
           style={{
-            position: 'absolute',
+            position: 'fixed',
             bottom: 90,
             right: 20,
             zIndex: 300,
             width: 480,
             maxWidth: 'calc(100vw - 40px)',
+            maxHeight: 'calc(100dvh - 110px)',
+            overflowY: 'auto',
             padding: '20px 22px 18px',
             borderColor: 'var(--border-active)',
             boxShadow: '0 0 32px rgba(179,0,27,0.18), 0 8px 32px rgba(0,0,0,0.55)',
@@ -44,7 +48,7 @@ export default function AccessPopup() {
               </h2>
             </div>
             <button
-              onClick={() => setVisible(false)}
+              onClick={close}
               aria-label="Close"
               style={{
                 background: 'none',
@@ -61,10 +65,33 @@ export default function AccessPopup() {
             </button>
           </div>
 
-          <p style={{ fontSize: 11, color: 'var(--de-fg-2)', lineHeight: 1.6, marginBottom: 14 }}>
+          <p style={{ fontSize: 11, color: 'var(--de-fg-2)', lineHeight: 1.6, marginBottom: 12 }}>
             The community dashboard gives you a live view of the digital landscape.
             Get in touch to unlock the full platform to support your decision making with deeper data, extended history, custom feeds, virtual analysts, and more.
           </p>
+
+          {/* always-visible close button below the text */}
+          <button
+            onClick={close}
+            aria-label="Close"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: '1px solid var(--border-secondary)',
+              borderRadius: 6,
+              cursor: 'pointer',
+              color: 'var(--de-fg-3)',
+              fontSize: 11,
+              padding: '6px 10px',
+              marginBottom: 14,
+              lineHeight: 1,
+            }}
+          >
+            <X size={11} />
+            Close
+          </button>
 
           {/* Monday.com embed */}
           <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-secondary)' }}>
