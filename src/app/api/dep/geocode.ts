@@ -257,8 +257,8 @@ function jitter(seed: string, axis: number, amplitude: number): number {
   return ((h / 0xffffffff) - 0.5) * 2 * amplitude;
 }
 
-/** ~5 km — enough to blur an exact address, small enough to stay inside the city. */
-const CITY_JITTER = 0.05;
+/** ~2 km — enough to blur an exact address, small enough to stay inside the city. */
+const CITY_JITTER = 0.02;
 /** ~40 km — country centroids are approximate anyway, spread the cluster out. */
 const COUNTRY_JITTER = 0.4;
 

@@ -70,7 +70,7 @@ Map points are placed in two tiers, reported per point as `geocodeTier`:
 
 | Tier | When | Accuracy |
 |------|------|----------|
-| `city` | `victimCity` resolves to coordinates | The city, plus ~5 km of privacy jitter |
+| `city` | `victimCity` resolves to coordinates | The city, plus ~2 km of privacy jitter |
 | `country` | No city, or the city cannot be resolved | The country centroid, plus ~40 km of jitter |
 
 City resolution goes through a built-in table of ~300 major cities first; anything
