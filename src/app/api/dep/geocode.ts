@@ -237,9 +237,30 @@ const COUNTRY_CENTROIDS: Record<string, [number, number]> = {
   ZM: [27.849, -13.134], ZW: [29.155, -19.015],
 };
 
-function jitter(): number {
-  return (Math.random() - 0.5) * 0.8;
+/** Deterministic 32-bit hash — same input always yields the same value. */
+function hashSeed(seed: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
 }
+
+/**
+ * Privacy jitter, deterministic per victim: the same record always lands on the
+ * same spot instead of hopping around every time the 4h cache is rebuilt.
+ * `axis` (0 = lng, 1 = lat) decorrelates the two components.
+ */
+function jitter(seed: string, axis: number, amplitude: number): number {
+  const h = hashSeed(`${seed}#${axis}`);
+  return ((h / 0xffffffff) - 0.5) * 2 * amplitude;
+}
+
+/** ~5 km — enough to blur an exact address, small enough to stay inside the city. */
+const CITY_JITTER = 0.05;
+/** ~40 km — country centroids are approximate anyway, spread the cluster out. */
+const COUNTRY_JITTER = 0.4;
 
 // Maps full country names (and common variants) to ISO 3166-1 alpha-2 codes.
 // Used when the API returns victimCountry (name) instead of / in addition to victimCC (code).
@@ -294,7 +315,7 @@ const COUNTRY_NAME_TO_CC: Record<string, string> = {
   'hong kong': 'HK', 'macau': 'MO', 'palestine': 'PS', 'kosovo': 'XK',
   'puerto rico': 'PR', 'bahamas': 'BS', 'barbados': 'BB', 'bermuda': 'BM',
   'cayman islands': 'KY', 'liechtenstein': 'LI', 'monaco': 'MC',
-  'san marino': 'SM', 'andorra': 'AD', 'iceland': 'IS',
+  'san marino': 'SM', 'andorra': 'AD',
   'trinidad & tobago': 'TT', 'republic of ireland': 'IE',
   'republic of korea': 'KR', 'republic of the philippines': 'PH',
 };
@@ -304,22 +325,217 @@ export function countryNameToCC(name: string | null): string | null {
   return COUNTRY_NAME_TO_CC[name.toLowerCase().trim()] ?? null;
 }
 
+// ── Live city resolution ────────────────────────────────────────────────────
+// The static table above covers ~300 large cities. Anything else (Parma IT,
+// Aarau CH, Tulsa US …) silently fell back to the country centroid, so a popup
+// could read "Parma, PR, IT" while the dot sat in the middle of Italy.
+// Unknown cities are now resolved against the Open-Meteo geocoding API (free,
+// no key) and memoised process-wide, including negative results.
+
+type LatLng = [number, number];
+
+declare global {
+  var __depCityGeocodeCache: Map<string, LatLng | null> | undefined;
+}
+const cityCache: Map<string, LatLng | null> = (globalThis.__depCityGeocodeCache ??= new Map());
+
+const GEOCODE_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
+const GEOCODE_CONCURRENCY = 5;
+const GEOCODE_TIMEOUT_MS = 5000;
+/** Hard ceiling on live lookups per privlist rebuild (i.e. once every 4h). */
+const GEOCODE_MAX_PER_RUN = 200;
+
+function liveGeocodeEnabled(): boolean {
+  return process.env.DEP_LIVE_GEOCODE !== 'false';
+}
+
+/** Strips accents, punctuation and common prefixes so "Parma," === "parma". */
+function normalizeCity(city: string): string {
+  return city
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/^(city|town|municipality|comune|commune) of /, '')
+    .replace(/[.,;]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Cache key. Includes the state/province: "Springfield, IL" and
+ * "Springfield, MA" are different places and must not share a cache entry.
+ */
+export function cityKey(city: string, cc: string, state: string | null): string {
+  return `${normalizeCity(city)}:${cc.toUpperCase()}:${state ? normalizeCity(state) : ''}`;
+}
+
+/** US states / CA provinces are usually 2-letter codes; the geocoder returns full names. */
+const SUBDIVISION_NAMES: Record<string, string> = {
+  'US:AL': 'alabama', 'US:AK': 'alaska', 'US:AZ': 'arizona', 'US:AR': 'arkansas',
+  'US:CA': 'california', 'US:CO': 'colorado', 'US:CT': 'connecticut', 'US:DE': 'delaware',
+  'US:DC': 'district of columbia', 'US:FL': 'florida', 'US:GA': 'georgia', 'US:HI': 'hawaii',
+  'US:ID': 'idaho', 'US:IL': 'illinois', 'US:IN': 'indiana', 'US:IA': 'iowa',
+  'US:KS': 'kansas', 'US:KY': 'kentucky', 'US:LA': 'louisiana', 'US:ME': 'maine',
+  'US:MD': 'maryland', 'US:MA': 'massachusetts', 'US:MI': 'michigan', 'US:MN': 'minnesota',
+  'US:MS': 'mississippi', 'US:MO': 'missouri', 'US:MT': 'montana', 'US:NE': 'nebraska',
+  'US:NV': 'nevada', 'US:NH': 'new hampshire', 'US:NJ': 'new jersey', 'US:NM': 'new mexico',
+  'US:NY': 'new york', 'US:NC': 'north carolina', 'US:ND': 'north dakota', 'US:OH': 'ohio',
+  'US:OK': 'oklahoma', 'US:OR': 'oregon', 'US:PA': 'pennsylvania', 'US:RI': 'rhode island',
+  'US:SC': 'south carolina', 'US:SD': 'south dakota', 'US:TN': 'tennessee', 'US:TX': 'texas',
+  'US:UT': 'utah', 'US:VT': 'vermont', 'US:VA': 'virginia', 'US:WA': 'washington',
+  'US:WV': 'west virginia', 'US:WI': 'wisconsin', 'US:WY': 'wyoming',
+  'CA:AB': 'alberta', 'CA:BC': 'british columbia', 'CA:MB': 'manitoba',
+  'CA:NB': 'new brunswick', 'CA:NL': 'newfoundland and labrador', 'CA:NS': 'nova scotia',
+  'CA:NT': 'northwest territories', 'CA:NU': 'nunavut', 'CA:ON': 'ontario',
+  'CA:PE': 'prince edward island', 'CA:QC': 'quebec', 'CA:SK': 'saskatchewan',
+  'CA:YT': 'yukon',
+};
+
+/** The state as given, plus its expanded name when it is a known 2-letter code. */
+function stateAliases(state: string | null, cc: string): string[] {
+  if (!state) return [];
+  const norm = normalizeCity(state);
+  const full = SUBDIVISION_NAMES[`${cc.toUpperCase()}:${state.toUpperCase().trim()}`];
+  return full ? [norm, full] : [norm];
+}
+
+/** Static-table hit, tolerant of "St." / "Saint" and accented spellings. */
+function staticCityCoords(city: string, cc: string): LatLng | undefined {
+  const name = normalizeCity(city);
+  const variants = [
+    name,
+    name.replace(/^st /, 'st. '),
+    name.replace(/^st\. /, 'st '),
+    name.replace(/^saint /, 'st '),
+  ];
+  for (const v of variants) {
+    const c = CITY_COORDS[`${v}:${cc.toUpperCase()}`];
+    if (c) return c;
+  }
+  return undefined;
+}
+
+interface OpenMeteoResult {
+  name: string;
+  latitude: number;
+  longitude: number;
+  country_code?: string;
+  admin1?: string;
+  admin2?: string;
+  population?: number;
+}
+
+/**
+ * Picks the best candidate for a city: it must sit in the expected country, and
+ * a match on the victim's state/province beats raw population (many countries
+ * have several same-named towns).
+ */
+function pickBest(results: OpenMeteoResult[], cc: string, state: string | null): OpenMeteoResult | null {
+  const inCountry = results.filter(r => (r.country_code || '').toUpperCase() === cc.toUpperCase());
+  if (inCountry.length === 0) return null;
+
+  const wanted = stateAliases(state, cc);
+  const scored = inCountry.map(r => {
+    let score = 0;
+    if (wanted.length > 0) {
+      const admins = [r.admin1, r.admin2].filter(Boolean).map(a => normalizeCity(a!));
+      const hit = admins.some(a => wanted.some(w => a === w || a.includes(w) || w.includes(a)));
+      if (hit) score += 1_000_000;
+    }
+    return { r, score: score + (r.population ?? 0) };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].r;
+}
+
+async function fetchCityCoords(city: string, cc: string, state: string | null): Promise<LatLng | null> {
+  const url = `${GEOCODE_ENDPOINT}?name=${encodeURIComponent(normalizeCity(city))}&count=10&language=en&format=json`;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(GEOCODE_TIMEOUT_MS) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const best = pickBest(Array.isArray(data?.results) ? data.results : [], cc, state);
+    return best ? [best.longitude, best.latitude] : null;
+  } catch {
+    return null; // offline / rate limited / timeout — the country fallback still applies
+  }
+}
+
+export interface CityLookup {
+  city: string | null;
+  cc: string | null;
+  state: string | null;
+}
+
+/**
+ * Resolves every city not already known (statically or from a previous run) and
+ * memoises the result. Bounded by `budgetMs` so a slow geocoding API can never
+ * stall the privlist response — anything left unresolved simply keeps the
+ * country-level fallback until the next rebuild.
+ */
+export async function warmCityGeocodeCache(lookups: CityLookup[], budgetMs = 8000): Promise<number> {
+  if (!liveGeocodeEnabled()) return 0;
+
+  const pending = new Map<string, { city: string; cc: string; state: string | null }>();
+  for (const l of lookups) {
+    if (!l.city || !l.cc) continue;
+    const key = cityKey(l.city, l.cc, l.state);
+    if (staticCityCoords(l.city, l.cc) || cityCache.has(key) || pending.has(key)) continue;
+    pending.set(key, { city: l.city, cc: l.cc, state: l.state });
+  }
+
+  const queue = [...pending.entries()].slice(0, GEOCODE_MAX_PER_RUN);
+  if (queue.length === 0) return 0;
+
+  const deadline = Date.now() + budgetMs;
+  let cursor = 0;
+  let resolved = 0;
+
+  async function worker(): Promise<void> {
+    while (cursor < queue.length && Date.now() < deadline) {
+      const [key, lookup] = queue[cursor++];
+      const coords = await fetchCityCoords(lookup.city, lookup.cc, lookup.state);
+      cityCache.set(key, coords);
+      if (coords) resolved++;
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(GEOCODE_CONCURRENCY, queue.length) }, worker));
+  console.log(`[DEP geocode] live lookups: ${queue.length} attempted, ${resolved} resolved, cache size ${cityCache.size}`);
+  return resolved;
+}
+
 export function geocodeVictim(
   victimCity: string | null,
   victimCC: string | null,
   victimCountry: string | null = null,
+  victimState: string | null = null,
+  seed = '',
 ): { lat: number; lng: number; tier: 'city' | 'country' } | null {
   // Resolve CC from name if not provided directly
   const cc = victimCC ?? countryNameToCC(victimCountry);
+  const jseed = seed || `${victimCity ?? ''}|${victimState ?? ''}|${cc ?? ''}`;
 
   if (victimCity && cc) {
-    const key = `${victimCity.toLowerCase()}:${cc.toUpperCase()}`;
-    const c = CITY_COORDS[key];
-    if (c) return { lng: c[0] + jitter() * 0.3, lat: c[1] + jitter() * 0.3, tier: 'city' };
+    const c = staticCityCoords(victimCity, cc) ?? cityCache.get(cityKey(victimCity, cc, victimState)) ?? null;
+    if (c) {
+      return {
+        lng: c[0] + jitter(jseed, 0, CITY_JITTER),
+        lat: c[1] + jitter(jseed, 1, CITY_JITTER),
+        tier: 'city',
+      };
+    }
   }
   if (cc) {
     const c = COUNTRY_CENTROIDS[cc.toUpperCase()];
-    if (c) return { lng: c[0] + jitter(), lat: c[1] + jitter(), tier: 'country' };
+    if (c) {
+      return {
+        lng: c[0] + jitter(jseed, 0, COUNTRY_JITTER),
+        lat: c[1] + jitter(jseed, 1, COUNTRY_JITTER),
+        tier: 'country',
+      };
+    }
   }
   return null;
 }

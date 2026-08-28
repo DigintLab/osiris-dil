@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchPrivlist } from '../client';
-import { geocodeVictim } from '../geocode';
+import { countryNameToCC, geocodeVictim, warmCityGeocodeCache } from '../geocode';
 import { DepDataset, DepGeoPoint } from '../types';
 
 export const dynamic = 'force-dynamic';
@@ -86,16 +86,31 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Resolve cities missing from the static table before plotting, so records
+    // that carry a city (e.g. "Parma, PR, IT") are not demoted to the country
+    // centroid. Bounded + memoised — see warmCityGeocodeCache.
+    await warmCityGeocodeCache(
+      records.map(r => ({
+        city: r.victimCity,
+        cc: r.victimCC ?? countryNameToCC(r.country ?? null),
+        state: r.victimState,
+      })),
+    );
+
     let fallbackId = 0;
     let dropped = 0;
+    let countryTier = 0;
     const victims: DepGeoPoint[] = [];
 
     for (const r of records) {
-      const geo = geocodeVictim(r.victimCity, r.victimCC, r.country ?? null);
+      const id = r.hashid || `dep-${fallbackId++}`;
+      const geo = geocodeVictim(r.victimCity, r.victimCC, r.country ?? null, r.victimState, id);
       if (!geo) { dropped++; continue; }
 
+      if (geo.tier === 'country') countryTier++;
+
       victims.push({
-        id: r.hashid || `dep-${fallbackId++}`,
+        id,
         victim: hideIdentity ? null : r.victim,
         sector: r.sector,
         actor: r.actor,
@@ -112,7 +127,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    console.log(`[DEP privlist] geocoded: ${victims.length} plotted, ${dropped} dropped (no usable location)`);
+    console.log(`[DEP privlist] geocoded: ${victims.length} plotted (${victims.length - countryTier} city-level, ${countryTier} country-level), ${dropped} dropped (no usable location)`);
 
     depCache.set(cacheKey, { victims, total: victims.length, ts, te, datasets, expiresAt: Date.now() + DEP_CACHE_TTL });
     console.log('[DEP privlist] cache SET — expires in 4h');
