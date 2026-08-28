@@ -43,6 +43,10 @@ DEP_HIDE_VICTIM_NAME=true      # Set to "true" to redact victim names and domain
 # The UI always requests ext,prv,dds by default regardless of this setting.
 # Set to all six to allow manual overrides via ?dset= to use any dataset.
 DEP_DEFAULT_DATASETS=ext,prv,dds
+
+# Optional geocoding controls
+DEP_LIVE_GEOCODE=              # Set to "false" to disable live city lookups (static table only)
+DEP_CACHE_REFRESH_KEY=         # If set, ?refresh=<key> rebuilds the 4h privlist cache on demand
 ```
 
 If `DEP_API_KEY` or `DEP_AUTH_ENDPOINT` are not set, both features silently return `503` and the layer toggle has no effect — no errors are shown to end users.
@@ -59,6 +63,27 @@ Set `DEP_HIDE_VICTIM_NAME=true` to redact identifying information before it reac
 | `annLink` | — | `null` |
 
 Sector, actor, country, city, and date are **not** redacted — they are useful for threat analysis without identifying a specific organisation. This mode is intended for demo deployments, analyst training environments, or any context where victim identity must not be exposed.
+
+### Victim geocoding
+
+Map points are placed in two tiers, reported per point as `geocodeTier`:
+
+| Tier | When | Accuracy |
+|------|------|----------|
+| `city` | `victimCity` resolves to coordinates | The city, plus ~2 km of privacy jitter |
+| `country` | No city, or the city cannot be resolved | The country centroid, plus ~40 km of jitter |
+
+City resolution goes through a built-in table of ~300 major cities first; anything
+else is looked up once against the [Open-Meteo geocoding API](https://open-meteo.com/en/docs/geocoding-api)
+(free, no key) and memoised for the lifetime of the process. `victimState` is used
+to disambiguate same-named cities, and US/CA two-letter state codes are expanded to
+full names before matching. Lookups are bounded (5 in parallel, 8s total budget,
+200 per rebuild) so a slow or unreachable geocoder can never stall the response —
+unresolved cities simply keep the country-level fallback and are retried on the next
+rebuild. Set `DEP_LIVE_GEOCODE=false` to stay on the static table only.
+
+Jitter is derived from the record id rather than randomly, so a given victim always
+lands on the same coordinates instead of moving each time the cache is rebuilt.
 
 ### Authentication flow
 
