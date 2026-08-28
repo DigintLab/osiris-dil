@@ -57,7 +57,13 @@ export async function GET(req: NextRequest) {
   const hideIdentity = process.env.DEP_HIDE_VICTIM_NAME === 'true';
   const cacheKey = `${[...datasets].sort().join(',')}|${ts}|${te}|${hideIdentity}`;
 
-  const cached = depCache.get(cacheKey);
+  // Escape hatch: ?refresh=<DEP_CACHE_REFRESH_KEY> rebuilds the 4h cache on demand
+  // (e.g. right after a deploy that changes geocoding). Disabled unless the env
+  // var is set, so the public map can never force upstream DEP calls.
+  const refreshKey = process.env.DEP_CACHE_REFRESH_KEY;
+  const forceRefresh = !!refreshKey && searchParams.get('refresh') === refreshKey;
+
+  const cached = forceRefresh ? undefined : depCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     console.log('[DEP privlist] cache HIT —', cached.total, 'victims, expires in', Math.round((cached.expiresAt - Date.now()) / 60000), 'min');
     return NextResponse.json(

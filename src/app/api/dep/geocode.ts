@@ -334,16 +334,35 @@ export function countryNameToCC(name: string | null): string | null {
 
 type LatLng = [number, number];
 
-declare global {
-  var __depCityGeocodeCache: Map<string, LatLng | null> | undefined;
+interface CityCacheEntry {
+  coords: LatLng | null;
+  /** Negative results expire so a renamed/misspelled city can be retried later. */
+  expiresAt: number;
 }
-const cityCache: Map<string, LatLng | null> = (globalThis.__depCityGeocodeCache ??= new Map());
+
+declare global {
+  var __depCityGeocodeCache: Map<string, CityCacheEntry> | undefined;
+}
+const cityCache: Map<string, CityCacheEntry> = (globalThis.__depCityGeocodeCache ??= new Map());
 
 const GEOCODE_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
 const GEOCODE_CONCURRENCY = 5;
-const GEOCODE_TIMEOUT_MS = 5000;
+const GEOCODE_TIMEOUT_MS = 8000;
+const GEOCODE_ATTEMPTS = 2;
 /** Hard ceiling on live lookups per privlist rebuild (i.e. once every 4h). */
 const GEOCODE_MAX_PER_RUN = 200;
+/** How long "the geocoder has no such city" is trusted before retrying. */
+const NEGATIVE_TTL_MS = 24 * 60 * 60 * 1000;
+
+function cachedCoords(key: string): LatLng | null | undefined {
+  const hit = cityCache.get(key);
+  if (!hit) return undefined;
+  if (hit.coords === null && hit.expiresAt <= Date.now()) {
+    cityCache.delete(key);
+    return undefined;
+  }
+  return hit.coords;
+}
 
 function liveGeocodeEnabled(): boolean {
   return process.env.DEP_LIVE_GEOCODE !== 'false';
@@ -449,17 +468,31 @@ function pickBest(results: OpenMeteoResult[], cc: string, state: string | null):
   return scored[0].r;
 }
 
-async function fetchCityCoords(city: string, cc: string, state: string | null): Promise<LatLng | null> {
+/**
+ * `found` / `missing` are answers worth caching; `failed` is a transient
+ * network problem and must NOT be cached — otherwise a single timeout would
+ * pin a real city to its country centroid for the lifetime of the process.
+ */
+type GeocodeOutcome =
+  | { status: 'found'; coords: LatLng }
+  | { status: 'missing' }
+  | { status: 'failed' };
+
+async function fetchCityCoords(city: string, cc: string, state: string | null): Promise<GeocodeOutcome> {
   const url = `${GEOCODE_ENDPOINT}?name=${encodeURIComponent(normalizeCity(city))}&count=10&language=en&format=json`;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(GEOCODE_TIMEOUT_MS) });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const best = pickBest(Array.isArray(data?.results) ? data.results : [], cc, state);
-    return best ? [best.longitude, best.latitude] : null;
-  } catch {
-    return null; // offline / rate limited / timeout — the country fallback still applies
+
+  for (let attempt = 1; attempt <= GEOCODE_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(GEOCODE_TIMEOUT_MS) });
+      if (!res.ok) continue; // 429/5xx — retry, then treat as transient
+      const data = await res.json();
+      const best = pickBest(Array.isArray(data?.results) ? data.results : [], cc, state);
+      return best ? { status: 'found', coords: [best.longitude, best.latitude] } : { status: 'missing' };
+    } catch {
+      // timeout / DNS / offline — fall through to the next attempt
+    }
   }
+  return { status: 'failed' };
 }
 
 export interface CityLookup {
@@ -481,7 +514,7 @@ export async function warmCityGeocodeCache(lookups: CityLookup[], budgetMs = 800
   for (const l of lookups) {
     if (!l.city || !l.cc) continue;
     const key = cityKey(l.city, l.cc, l.state);
-    if (staticCityCoords(l.city, l.cc) || cityCache.has(key) || pending.has(key)) continue;
+    if (staticCityCoords(l.city, l.cc) || cachedCoords(key) !== undefined || pending.has(key)) continue;
     pending.set(key, { city: l.city, cc: l.cc, state: l.state });
   }
 
@@ -491,18 +524,30 @@ export async function warmCityGeocodeCache(lookups: CityLookup[], budgetMs = 800
   const deadline = Date.now() + budgetMs;
   let cursor = 0;
   let resolved = 0;
+  let missing = 0;
+  let failed = 0;
 
   async function worker(): Promise<void> {
     while (cursor < queue.length && Date.now() < deadline) {
       const [key, lookup] = queue[cursor++];
-      const coords = await fetchCityCoords(lookup.city, lookup.cc, lookup.state);
-      cityCache.set(key, coords);
-      if (coords) resolved++;
+      const outcome = await fetchCityCoords(lookup.city, lookup.cc, lookup.state);
+      if (outcome.status === 'found') {
+        cityCache.set(key, { coords: outcome.coords, expiresAt: Infinity });
+        resolved++;
+      } else if (outcome.status === 'missing') {
+        cityCache.set(key, { coords: null, expiresAt: Date.now() + NEGATIVE_TTL_MS });
+        missing++;
+      } else {
+        failed++; // transient — leave uncached so the next rebuild retries
+      }
     }
   }
 
   await Promise.all(Array.from({ length: Math.min(GEOCODE_CONCURRENCY, queue.length) }, worker));
-  console.log(`[DEP geocode] live lookups: ${queue.length} attempted, ${resolved} resolved, cache size ${cityCache.size}`);
+  console.log(
+    `[DEP geocode] live lookups: ${queue.length} attempted, ${resolved} resolved, ` +
+    `${missing} not found, ${failed} failed (will retry), cache size ${cityCache.size}`,
+  );
   return resolved;
 }
 
@@ -518,7 +563,7 @@ export function geocodeVictim(
   const jseed = seed || `${victimCity ?? ''}|${victimState ?? ''}|${cc ?? ''}`;
 
   if (victimCity && cc) {
-    const c = staticCityCoords(victimCity, cc) ?? cityCache.get(cityKey(victimCity, cc, victimState)) ?? null;
+    const c = staticCityCoords(victimCity, cc) ?? cachedCoords(cityKey(victimCity, cc, victimState)) ?? null;
     if (c) {
       return {
         lng: c[0] + jitter(jseed, 0, CITY_JITTER),
