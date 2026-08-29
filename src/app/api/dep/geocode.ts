@@ -1,3 +1,5 @@
+import CITY_INDEX from './city-index.json';
+
 // City lookup: "city_lowercase:CC" → [lon, lat]
 const CITY_COORDS: Record<string, [number, number]> = {
   // United States
@@ -437,6 +439,46 @@ function stateAliases(state: string | null, cc: string): string[] {
   return full ? [norm, full] : [norm];
 }
 
+// ── Offline gazetteer ───────────────────────────────────────────────────────
+// city-index.json holds every GeoNames place with population >= 5000 (~68k
+// keys), as "<name>:<CC>" → "lat,lng,admin1,admin2|<next candidate>" ordered by
+// population. It is the reason city placement works on serverless: no network
+// call, no per-instance cache to warm, no lookup budget to run out of.
+
+const cityIndex = CITY_INDEX as Record<string, string>;
+
+interface IndexedCity {
+  coords: LatLng;
+  admin1: string;
+  admin2: string;
+}
+
+function indexedCandidates(city: string, cc: string): IndexedCity[] {
+  const row = cityIndex[`${normalizeCity(city)}:${cc.toUpperCase()}`];
+  if (!row) return [];
+  return row.split('|').map(part => {
+    const [lat, lng, admin1 = '', admin2 = ''] = part.split(',');
+    return { coords: [Number(lng), Number(lat)] as LatLng, admin1, admin2 };
+  });
+}
+
+/**
+ * Same-named places within one country are ordered by population, so the first
+ * candidate is the right answer unless the record names a subdivision — GeoNames
+ * admin codes are exactly the codes DEP reports ("MA" for Massachusetts, "PR"
+ * for Parma), so an exact code match wins.
+ */
+function indexedCityCoords(city: string, cc: string, state: string | null): LatLng | undefined {
+  const candidates = indexedCandidates(city, cc);
+  if (candidates.length === 0) return undefined;
+  if (state) {
+    const want = state.trim().toUpperCase();
+    const hit = candidates.find(c => c.admin1.toUpperCase() === want || c.admin2.toUpperCase() === want);
+    if (hit) return hit.coords;
+  }
+  return candidates[0].coords;
+}
+
 /** Static-table hit, tolerant of "St." / "Saint" and accented spellings. */
 function staticCityCoords(city: string, cc: string): LatLng | undefined {
   const name = normalizeCity(city);
@@ -532,7 +574,12 @@ export async function warmCityGeocodeCache(lookups: CityLookup[], budgetMs = 800
   for (const l of lookups) {
     if (!l.city || !l.cc) continue;
     const key = cityKey(l.city, l.cc, l.state);
-    if (staticCityCoords(l.city, l.cc) || cachedCoords(key) !== undefined || pending.has(key)) continue;
+    if (
+      staticCityCoords(l.city, l.cc) ||
+      indexedCityCoords(l.city, l.cc, l.state) ||
+      cachedCoords(key) !== undefined ||
+      pending.has(key)
+    ) continue;
     pending.set(key, { city: l.city, cc: l.cc, state: l.state });
   }
 
@@ -581,7 +628,10 @@ export function geocodeVictim(
   const jseed = seed || `${victimCity ?? ''}|${victimState ?? ''}|${cc ?? ''}`;
 
   if (victimCity && cc) {
-    const c = staticCityCoords(victimCity, cc) ?? cachedCoords(cityKey(victimCity, cc, victimState)) ?? null;
+    const c = staticCityCoords(victimCity, cc)
+      ?? indexedCityCoords(victimCity, cc, victimState)
+      ?? cachedCoords(cityKey(victimCity, cc, victimState))
+      ?? null;
     if (c) {
       const [dLng, dLat] = jitter(jseed, CITY_JITTER);
       return { lng: c[0] + dLng, lat: c[1] + dLat, tier: 'city' };
