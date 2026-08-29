@@ -73,14 +73,35 @@ Map points are placed in two tiers, reported per point as `geocodeTier`:
 | `city` | `victimCity` resolves to coordinates | The city, plus ~2 km of privacy jitter |
 | `country` | No city, or the city cannot be resolved | The country centroid, plus ~40 km of jitter |
 
-City resolution goes through a built-in table of ~300 major cities first; anything
-else is looked up once against the [Open-Meteo geocoding API](https://open-meteo.com/en/docs/geocoding-api)
-(free, no key) and memoised for the lifetime of the process. `victimState` is used
-to disambiguate same-named cities, and US/CA two-letter state codes are expanded to
-full names before matching. Lookups are bounded (5 in parallel, 8s total budget,
-200 per rebuild) so a slow or unreachable geocoder can never stall the response —
-unresolved cities simply keep the country-level fallback and are retried on the next
-rebuild. Set `DEP_LIVE_GEOCODE=false` to stay on the static table only.
+A city is resolved in three steps, stopping at the first hit:
+
+1. **Built-in table** — ~300 major cities under their English names, inline in `geocode.ts`.
+2. **Offline gazetteer** — `city-index.json`, every populated place of 5000+ people
+   (~69k places, ~137k lookup keys including local-language spellings: Roma, München,
+   Wien, Firenze). No network call, so this works identically on a cold serverless
+   instance; it is what makes city placement reliable in production.
+3. **Live lookup** — anything still unresolved goes to the
+   [Open-Meteo geocoding API](https://open-meteo.com/en/docs/geocoding-api) (free, no key)
+   and is memoised for the lifetime of the process. Bounded to 5 parallel requests, an 8s
+   budget and 200 per rebuild, so a slow geocoder can never stall the response.
+   Set `DEP_LIVE_GEOCODE=false` to skip this step entirely.
+
+`victimState` disambiguates same-named cities (Springfield MA vs IL vs MO). The gazetteer
+stores GeoNames admin codes, which are the same codes DEP reports — `MA` for Massachusetts,
+`PR` for Parma — so an exact code match wins; otherwise the most populous match is used.
+For the live API, US/CA two-letter codes are expanded to full names before matching.
+
+### Regenerating the gazetteer
+
+`city-index.json` is generated, not hand-edited:
+
+```bash
+node scripts/build-city-index.mjs          # downloads the GeoNames dump
+node scripts/build-city-index.mjs cities5000.txt   # or use a local copy
+```
+
+City data from [GeoNames](https://www.geonames.org/), licensed
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 Jitter is derived from the record id rather than randomly, so a given victim always
 lands on the same coordinates instead of moving each time the cache is rebuilt.

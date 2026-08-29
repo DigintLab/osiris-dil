@@ -27,4 +27,8 @@ Full license text: https://creativecommons.org/licenses/by-nd/4.0/legalcode
 ---
 
 Note: This license applies to DIL-curated data only. Third-party data sources
-(USGS, NASA FIRMS, NVD, etc.) remain subject to their own respective licenses.
+(USGS, NASA FIRMS, NVD, GeoNames, etc.) remain subject to their own respective licenses.
+
+City coordinates in src/app/api/dep/city-index.json are derived from the
+GeoNames geographical database (https://www.geonames.org/), licensed under
+Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/).

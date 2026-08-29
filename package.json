@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:city-index": "node scripts/build-city-index.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
