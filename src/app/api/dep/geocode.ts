@@ -237,7 +237,7 @@ const COUNTRY_CENTROIDS: Record<string, [number, number]> = {
   ZM: [27.849, -13.134], ZW: [29.155, -19.015],
 };
 
-/** Deterministic 32-bit hash — same input always yields the same value. */
+/** Deterministic 32-bit FNV-1a hash — same input always yields the same value. */
 function hashSeed(seed: string): number {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) {
@@ -248,13 +248,31 @@ function hashSeed(seed: string): number {
 }
 
 /**
+ * mulberry32 — a small PRNG with proper avalanche. Successive draws from one
+ * seed are independent, which a raw hash is not: FNV-1a ends on
+ * `h = (h ^ byte) * prime`, so hashing "<id>#0" and "<id>#1" yields two values
+ * that differ by a constant. Using those as x and y put every point on the
+ * line y = x + c — the diagonal stripes seen in dense country-level clusters.
+ */
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
  * Privacy jitter, deterministic per victim: the same record always lands on the
  * same spot instead of hopping around every time the 4h cache is rebuilt.
- * `axis` (0 = lng, 1 = lat) decorrelates the two components.
+ * Returns [lngOffset, latOffset], drawn independently from one seed.
  */
-function jitter(seed: string, axis: number, amplitude: number): number {
-  const h = hashSeed(`${seed}#${axis}`);
-  return ((h / 0xffffffff) - 0.5) * 2 * amplitude;
+function jitter(seed: string, amplitude: number): [number, number] {
+  const rand = mulberry32(hashSeed(seed));
+  return [(rand() - 0.5) * 2 * amplitude, (rand() - 0.5) * 2 * amplitude];
 }
 
 /** ~2 km — enough to blur an exact address, small enough to stay inside the city. */
@@ -565,21 +583,15 @@ export function geocodeVictim(
   if (victimCity && cc) {
     const c = staticCityCoords(victimCity, cc) ?? cachedCoords(cityKey(victimCity, cc, victimState)) ?? null;
     if (c) {
-      return {
-        lng: c[0] + jitter(jseed, 0, CITY_JITTER),
-        lat: c[1] + jitter(jseed, 1, CITY_JITTER),
-        tier: 'city',
-      };
+      const [dLng, dLat] = jitter(jseed, CITY_JITTER);
+      return { lng: c[0] + dLng, lat: c[1] + dLat, tier: 'city' };
     }
   }
   if (cc) {
     const c = COUNTRY_CENTROIDS[cc.toUpperCase()];
     if (c) {
-      return {
-        lng: c[0] + jitter(jseed, 0, COUNTRY_JITTER),
-        lat: c[1] + jitter(jseed, 1, COUNTRY_JITTER),
-        tier: 'country',
-      };
+      const [dLng, dLat] = jitter(jseed, COUNTRY_JITTER);
+      return { lng: c[0] + dLng, lat: c[1] + dLat, tier: 'country' };
     }
   }
   return null;
