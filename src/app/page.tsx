@@ -652,7 +652,7 @@ export default function Dashboard() {
       {/* ── ATTRIBUTION + LICENSE ── */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4 }}
-        className="absolute bottom-[75px] md:bottom-[22px] right-[320px] md:right-[340px] z-[200] pointer-events-none hidden md:flex items-center gap-1.5"
+        className={`absolute bottom-[75px] md:bottom-[22px] right-[320px] md:right-[340px] z-[200] pointer-events-none hidden md:flex items-center gap-1.5${noUi ? ' !hidden' : ''}`}
       >
         <span className="text-[8px] font-mono tracking-[0.18em] uppercase" style={{ color: 'var(--de-fg-3)' }}>
           Built on{' '}
@@ -717,7 +717,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ── TOP-RIGHT STATUS (desktop) — C2 DISPLAY ── */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }} className="status-bar-desktop absolute top-3 right-3 md:top-4 md:right-5 z-[200] pointer-events-none flex items-center gap-1.5 md:gap-3 text-[9px] md:text-[10px] font-mono tracking-widest text-[var(--text-muted)]">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }} className={`status-bar-desktop absolute top-3 right-3 md:top-4 md:right-5 z-[200] pointer-events-none flex items-center gap-1.5 md:gap-3 text-[9px] md:text-[10px] font-mono tracking-widest text-[var(--text-muted)]${noUi ? ' !hidden' : ''}`}>
 
         {/* Zulu Clock */}
         <span className="hidden lg:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm border border-[var(--border-primary)] bg-black/30">
