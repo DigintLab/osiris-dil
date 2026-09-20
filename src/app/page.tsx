@@ -111,6 +111,7 @@ export default function Dashboard() {
   const [showLayers, setShowLayers] = useState(true);
   const [showMarkets, setShowMarkets] = useState(true);
   const [showIntel, setShowIntel] = useState(true);
+  const [noUi, setNoUi] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<'layers'|'markets'|'intel'|'search'|null>(null);
   const [mapProjection, setMapProjection] = useState<'globe'|'mercator'>('globe');
@@ -156,6 +157,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
+    setNoUi(p.has('noui'));
     const lat = parseFloat(p.get('lat') || '');
     const lon = parseFloat(p.get('lon') || '');
     const zoom = parseFloat(p.get('zoom') || '');
@@ -187,6 +189,7 @@ export default function Dashboard() {
       const active = Object.entries(activeLayers).filter(([,v]) => v).map(([k]) => k).join(',');
       p.set('layers', active);
       if (new URLSearchParams(window.location.search).has('nopopup')) p.set('nopopup', '');
+      if (new URLSearchParams(window.location.search).has('noui')) p.set('noui', '');
       const url = `${window.location.pathname}?${p.toString()}`;
       window.history.replaceState(null, '', url);
     }, 1500);
@@ -746,7 +749,7 @@ export default function Dashboard() {
 
 
       {/* ── LEFT HUD (desktop): Layers + Stats + Markets + Intel ── */}
-      <div className="desktop-panel absolute left-5 top-20 bottom-24 w-72 flex flex-col gap-3 z-[200] pointer-events-none overflow-y-auto styled-scrollbar pr-1">
+      {!noUi && <div className="desktop-panel absolute left-5 top-20 bottom-24 w-72 flex flex-col gap-3 z-[200] pointer-events-none overflow-y-auto styled-scrollbar pr-1">
         {showLayers && (
           <>
             <LayerPanel data={data} activeLayers={activeLayers} setActiveLayers={setActiveLayers} />
@@ -755,17 +758,17 @@ export default function Dashboard() {
         )}
         {showMarkets && <MarketsPanel data={data} spaceWeather={spaceWeather} />}
         {showIntel && <IntelFeed data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} />}
-      </div>
+      </div>}
 
       {/* ── RIGHT HUD (desktop): Search + Vuln Feed ── */}
-      <div className="desktop-panel absolute right-5 top-20 bottom-24 w-80 flex flex-col gap-3 z-[200] pointer-events-auto overflow-y-auto styled-scrollbar pr-1">
+      {!noUi && <div className="desktop-panel absolute right-5 top-20 bottom-24 w-80 flex flex-col gap-3 z-[200] pointer-events-auto overflow-y-auto styled-scrollbar pr-1">
         <div className="flex gap-2 items-start">
           <div className="flex-1"><SearchBar onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} /></div>
           <div className="relative"><SharePanel mapView={mapView} activeLayers={activeLayers} mouseCoords={null} /></div>
         </div>
         {process.env.NEXT_PUBLIC_DEP_SEARCH === 'true' && <DepPanel />}
         <VulnFeed />
-      </div>
+      </div>}
 
       {/* ── LIVE FEED VIEWER OVERLAY ── */}
       <AnimatePresence>
@@ -869,7 +872,7 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* ═══ MOBILE UI ═══ */}
-      {isMobile && (
+      {isMobile && !noUi && (
         <>
           {/* Mobile Bottom Navigation */}
           <div className="mobile-nav">
@@ -939,7 +942,7 @@ export default function Dashboard() {
       )}
 
       {/* ── BOTTOM CENTER (desktop) ── */}
-      {!isMobile && (
+      {!isMobile && !noUi && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 3, duration: 0.8 }} className="desktop-only absolute bottom-5 left-1/2 -translate-x-1/2 z-[200] pointer-events-auto">
           <div className="glass-panel px-5 py-2.5 flex items-center gap-0 osiris-glow relative overflow-hidden" style={{ borderImage: 'linear-gradient(90deg, rgba(212,175,55,0.05), rgba(212,175,55,0.2), rgba(212,175,55,0.05)) 1', borderImageSlice: 1, borderWidth: '1px', borderStyle: 'solid' }}>
 
@@ -1068,12 +1071,14 @@ export default function Dashboard() {
       <KeyboardShortcuts />
 
       {/* ── GLOBAL STATUS TICKER (bottom) ── */}
-      <GlobalStatusBar />
+      {!noUi && <GlobalStatusBar />}
 
       {/* Shortcut hint */}
-      <div className="desktop-only absolute bottom-[26px] right-5 z-[200] pointer-events-none text-[6px] font-mono text-[var(--text-muted)]/40 tracking-widest">
-        [?] SHORTCUTS · [F] FULLSCREEN · [S] SHARE · [R] RESET VIEW
-      </div>
+      {!noUi && (
+        <div className="desktop-only absolute bottom-[26px] right-5 z-[200] pointer-events-none text-[6px] font-mono text-[var(--text-muted)]/40 tracking-widest">
+          [?] SHORTCUTS · [F] FULLSCREEN · [S] SHARE · [R] RESET VIEW
+        </div>
+      )}
 
       {/* Access popup — appears after 60 s */}
       <AccessPopup />

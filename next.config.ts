@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**' },
     ],
   },
+  async rewrites() {
+    return [
+      { source: '/dashboard', destination: '/' },
+      { source: '/dashboard/:path*', destination: '/' },
+      { source: '/embed', destination: '/' },
+      { source: '/embed/:path*', destination: '/' },
+    ];
+  },
   async headers() {
     return [
       {

@@ -135,10 +135,19 @@ By default, the dashboard can be embedded only by HTTPS subdomains of
 `digintlab.com` and `doubleextortion.com`:
 
 ```html
-<iframe src="https://community.digintlab.com/?nopopup" title="DIL Observatory"></iframe>
+<iframe src="https://community.digintlab.com/embed/?nopopup" title="DIL Observatory"></iframe>
 ```
 
-Add `?nopopup` to suppress the delayed “Get in touch” popup.
+Add `?nopopup` to suppress the delayed “Get in touch” popup, and `?noui` to
+hide the side panels, mobile panel navigation, bottom data panel, and status
+ticker for a map-focused embed. Parameters can be combined:
+
+```text
+/embed/dashboard?nopopup&noui
+```
+
+The `/embed` route also accepts arbitrary suffixes, such as `/embed/dashboard`.
+The regular `/dashboard` path and its suffixes remain supported as well.
 
 To change the trusted sites, set `IFRAME_ALLOWED_ORIGINS` in Vercel and
 redeploy. Use a comma-separated list of origins (scheme and hostname, without a
