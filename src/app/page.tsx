@@ -186,6 +186,7 @@ export default function Dashboard() {
       p.set('zoom', mapView.zoom.toFixed(2));
       const active = Object.entries(activeLayers).filter(([,v]) => v).map(([k]) => k).join(',');
       p.set('layers', active);
+      if (new URLSearchParams(window.location.search).has('nopopup')) p.set('nopopup', '');
       const url = `${window.location.pathname}?${p.toString()}`;
       window.history.replaceState(null, '', url);
     }, 1500);

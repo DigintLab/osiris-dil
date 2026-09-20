@@ -8,6 +8,8 @@ export default function AccessPopup() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('nopopup')) return;
+
     const timer = setTimeout(() => setVisible(true), 60_000);
     return () => clearTimeout(timer);
   }, []);
