@@ -129,6 +129,23 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
+### Embedding the dashboard
+
+By default, the dashboard can be embedded only by HTTPS subdomains of
+`digintlab.com` and `doubleextortion.com`:
+
+```html
+<iframe src="https://community.digintlab.com/" title="DIL Observatory"></iframe>
+```
+
+To change the trusted sites, set `IFRAME_ALLOWED_ORIGINS` in Vercel and
+redeploy. Use a comma-separated list of origins (scheme and hostname, without a
+path):
+
+```env
+IFRAME_ALLOWED_ORIGINS=https://portal.example.com,https://admin.example.com
+```
+
 ### Docker / Self-Hosting
 
 ```bash
